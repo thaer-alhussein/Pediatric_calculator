@@ -33,7 +33,7 @@
             --reset-btn: #ea580c;
             --reset-btn-hover: #c2410c;
             --copy-btn: #0284c7;
-            --copy-btn-hover: #0284c7;
+            --copy-btn-hover: #0369a1;
             --accent-color: #0284c7;
             --input-bg: #f1f5f9;
             --fluid-bg: #f1f5f9;
@@ -129,11 +129,20 @@
         }
         
         select option {
-            direction: rtl;
-            text-align: right;
+            direction: ltr;
+            text-align: left;
             background-color: var(--card-bg);
             color: var(--text-main);
             padding: 10px;
+        }
+
+        .concentration-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--fluid-bg);
+            border-radius: 10px;
+            border: 1px dashed var(--border-color);
         }
 
         .btn-calculate {
@@ -264,7 +273,7 @@
     
     <div class="form-group">
         <label for="weight">Weight (kg)</label>
-        <input type="number" id="weight" placeholder="e.g. 12.5" min="0.5" max="100" step="0.5">
+        <input type="number" id="weight" placeholder="e.g. 12.5" min="0.5" max="150" step="0.1">
     </div>
 
     <div class="form-group">
@@ -274,9 +283,10 @@
 
     <div class="form-group">
         <label for="medication">Select a drug / service</label>
-        <select id="medication">
+        <select id="medication" onchange="checkDynamicOptions()">
             <option value="" disabled selected>Choose a medication from the list...</option>
-            <option value="fluids">💧 Maintenance Fluids + Electrolytes (NS, Ds, KCL)</option>
+            <option value="fluids">💧 Maintenance Fluids + Electrolytes (Full)</option>
+            <option value="half_fluids">💧 Half-Maintenance Fluids (نصف الحاجة)</option>
             <optgroup label="--- IV Medications ---">
                 <option value="iv_0">نقل الدم / البلازما</option>
                 <option value="iv_1">ألبومين 20%</option>
@@ -284,7 +294,7 @@
                 <option value="iv_3">كلوريد البوتاسيوم 15%</option>
                 <option value="iv_4">روس (Ceftriaxone)</option>
                 <option value="iv_5">فلاجيل (Metronidazole)</option>
-                <option value="iv_6">سيتامول (Paracetamol)</option>
+                <option value="iv_6">سيتامول (Paracetamol IV)</option>
                 <option value="iv_7">سفتا (Ceftazidime)</option>
                 <option value="iv_8">فانكو (Vancomycin)</option>
                 <option value="iv_9">كلافو (Claforan)</option>
@@ -301,8 +311,8 @@
                 <option value="iv_20">بيتدين</option>
                 <option value="iv_21">دورميكوم / دورميتا</option>
                 <option value="iv_22">أوغمنتين IV</option>
-                <option value="iv_23">سيفيكس / اورالوكس</option>
-                <option value="iv_24">بروفين (Ibuprofen)</option>
+                <option value="iv_23">سيفيكس / اورالوكس (IV)</option>
+                <option value="iv_24">بروفين (Ibuprofen IV)</option>
                 <option value="iv_25">رونيم (Meropenem)</option>
                 <option value="iv_26">تارغو (Targocid)</option>
                 <option value="iv_27">بيزا (Piperacillin/Tazobactam)</option>
@@ -314,16 +324,21 @@
             <optgroup label="--- Oral Syrups ---">
                 <option value="oral_0">نتروفورانتوئين</option>
                 <option value="oral_1">لاكتولوز</option>
-                <option value="oral_2">سيفيكس</option>
-                <option value="oral_3">اورالوكس</option>
-                <option value="oral_4">فلاجيل (Metronidazole)</option>
-                <option value="oral_5">سيتامول</option>
-                <option value="oral_6">بروفين (Ibuprofen)</option>
-                <option value="oral_7">أوغمنتين</option>
+                <option value="oral_2">سيفيكس (Oral)</option>
+                <option value="oral_3">اورالوكس (Oral)</option>
+                <option value="oral_4">فلاجيل (Metronidazole Oral)</option>
+                <option value="oral_5">سيتامول (Paracetamol Syrup)</option>
+                <option value="oral_6">بروفين (Ibuprofen Syrup)</option>
+                <option value="oral_7">أوغمنتين (Augmentin Syrup)</option>
                 <option value="oral_8">أومني (Omnicef)</option>
                 <option value="oral_9">زدناد (Zinnat)</option>
             </optgroup>
         </select>
+
+        <div id="concentrationBox" class="concentration-box">
+            <label for="subOptionSelect" id="subOptionLabel">اختر الجرعة أو التركيز:</label>
+            <select id="subOptionSelect"></select>
+        </div>
     </div>
 
     <button class="btn-calculate" onclick="calculate()">Calculate Dose</button>
@@ -342,61 +357,370 @@
     </div>
 
     <div class="footer-signature">
-        Developed by Dr. Thaer Al Hussein
+        Developed by Dr. Thaer Alhussein
     </div>
 </div>
 
 <script>
     const ivMeds = [
-        {name: "نقل الدم / البلازما", doseText: "10-15 ml/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${w * 10} to ${w * 15} ml`},
-        {name: "ألبومين 20%", doseText: "1 g/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${w * 1} g`},
-        {name: "كلوريد البوتاسيوم 7.5%", doseText: "1 ml/kg", freq: "-", max: "-", calc: w => `${w * 1} ml`},
-        {name: "كلوريد البوتاسيوم 15%", doseText: "0.5 ml/kg", freq: "-", max: "-", calc: w => `${w * 0.5} ml`},
-        {name: "روس (Ceftriaxone)", doseText: "50 mg/kg/day", freq: "Twice daily (divided BID)", max: "1 g per dose", calc: w => {
-            let total = w * 50;
-            let single = total / 2;
-            return `Single Dose: ${single} mg | Daily Total: ${total} mg (Single dose × 2)`;
-        }},
-        {name: "فلاجيل (Metronidazole)", doseText: "30 mg/kg", freq: "Divided TID (every 8 hours)", max: "500 mg per dose", calc: w => `${w * 30} mg`},
-        {name: "سيتامول (Paracetamol)", doseText: "40-60 mg/kg", freq: "Divided every 4-6 hours", max: "4 g / day", calc: w => `${w * 40} to ${w * 60} mg`},
-        {name: "سفتا (Ceftazidime)", doseText: "150 mg/kg", freq: "Divided TID", max: "1 g per dose", calc: w => `${w * 150} mg`},
-        {name: "فانكو (Vancomycin)", doseText: "45 mg/kg", freq: "Divided TID", max: "-", calc: w => `${w * 45} mg`},
-        {name: "كلافو (Claforan)", doseText: "150 mg/kg", freq: "Divided TID", max: "12 g / day", calc: w => `${w * 150} mg`},
-        {name: "روس بلس (Ceftriaxone + Sulbactam)", doseText: "75 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 75} mg`},
-        {name: "أميكا (Amikacin)", doseText: "15 mg/kg", freq: "Divided BID (max 5 days)", max: "1.5 g / day", calc: w => `${w * 15} mg`},
-        {name: "تينام (Tienam)", doseText: "90-110 mg/kg", freq: "Divided TID", max: "4 g / day", calc: w => `${w * 90} to ${w * 110} mg`},
-        {name: "ميتوكال (Metoclopramide)", doseText: "0.45 mg/kg", freq: "Divided TID", max: "0.8 mg/kg/day", calc: w => `${(w * 0.45).toFixed(1)} mg`},
-        {name: "ديفوميت (Ondansetron)", doseText: "0.15 mg/kg", freq: "TID", max: "16 mg per dose", calc: w => `${(w * 0.15).toFixed(1)} mg`},
-        {name: "ديكلون (Diclofenac)", doseText: "1 mg/kg", freq: "Single dose", max: "100 mg", calc: w => `${w * 1} mg`},
-        {name: "ديكسون (Dexamethasone)", doseText: "0.5 mg/kg", freq: "Divided TID", max: "40 mg", calc: w => `${w * 0.5} mg`},
-        {name: "هيدروكورتيزون (Hydrocortisone)", doseText: "10 mg/kg", freq: "-", max: "-", calc: w => `${w * 10} mg`},
-        {name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "-", calc: w => `${w * 1} mg`},
-        {name: "سباسمون", doseText: "0.5 mg/kg", freq: "-", max: "-", calc: w => `${w * 0.5} mg`},
-        {name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${w * 0.5} to ${w * 1} mg`},
-        {name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.2).toFixed(1)} to ${(w * 0.5).toFixed(1)} mg`},
-        {name: "أوغمنتين IV", doseText: "75 mg/kg", freq: "Divided TID", max: "600 mg per dose", calc: w => `${w * 75} mg`},
-        {name: "سيفيكس / اورالوكس", doseText: "10 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 10} mg`},
-        {name: "بروفين (Ibuprofen)", doseText: "8-10 mg/kg", freq: "TID", max: "3.2 g / day", calc: w => `${w * 8} to ${w * 10} mg`},
-        {name: "رونيم (Meropenem)", doseText: "60 mg/kg", freq: "Divided TID", max: "3 g / day", calc: w => `${w * 60} mg`},
-        {name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${w * 12} mg | Maint: ${w * 10} mg`},
-        {name: "بيزا (Piperacillin/Tazobactam)", doseText: "100 mg/kg", freq: "TID", max: "4.5 g vial", calc: w => `${w * 100} mg`},
-        {name: "كوليستين", doseText: "75,000 IU/kg", freq: "Divided TID", max: "-", calc: w => `${(w * 75000).toLocaleString()} IU`},
-        {name: "فلوكونازول", doseText: "10 mg/kg", freq: "Single dose", max: "12 mg/kg/day", calc: w => `${w * 10} mg`},
-        {name: "ليفوفلوكساسين", doseText: "10 mg/kg", freq: "Single dose", max: "500 mg/day", calc: w => `${w * 10} mg`},
-        {name: "لينزولايد", doseText: "10 mg/kg", freq: "TID", max: "-", calc: w => `${w * 10} mg`}
+        { name: "نقل الدم / البلازما", doseText: "10-15 ml/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 10).toFixed(1)} to ${(w * 15).toFixed(1)} ml` },
+        { name: "ألبومين 20%", doseText: "1 g/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 1).toFixed(1)} g` },
+        { name: "كلوريد البوتاسيوم 7.5%", doseText: "1 ml/kg", freq: "-", max: "-", calc: w => `${(w * 1).toFixed(1)} ml` },
+        { name: "كلوريد البوتاسيوم 15%", doseText: "0.5 ml/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(1)} ml` },
+        {
+            name: "روس (Ceftriaxone)", 
+            doseText: "50 mg/kg/day", 
+            freq: "Twice daily (divided BID)", 
+            max: "Max 1 g per single dose", 
+            calc: w => {
+                let total = w * 50;
+                let single = total / 2;
+                if (single > 1000) { single = 1000; total = 2000; }
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "فلاجيل (Metronidazole)", 
+            doseText: "30 mg/kg/day", 
+            freq: "Divided TID (every 8 hours)", 
+            max: "Max 500 mg per single dose", 
+            calc: w => {
+                let total = w * 30;
+                let single = total / 3;
+                if (single > 500) { single = 500; total = 1500; }
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "سيتامول (Paracetamol IV)", 
+            doseText: "60 mg/kg/day", 
+            freq: (optIndex) => (optIndex === 1 ? "6 times daily (Every 4 hours)" : "4 times daily (Every 6 hours)"), 
+            max: "Max 1 g per single dose", 
+            isSelectableDose: true,
+            options: [
+                { label: "4 مرات يومياً (مقسومة على 4 جرعات - كل 6 ساعات)", divider: 4 },
+                { label: "6 مرات يومياً (مقسومة على 6 جرعات - كل 4 ساعات)", divider: 6 }
+            ],
+            calc: (w, optIndex) => {
+                let total = w * 60;
+                let divider = (optIndex === 1) ? 6 : 4;
+                let single = total / divider;
+                if (single > 1000) { single = 1000; }
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "سفتا (Ceftazidime)", 
+            doseText: "150 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 1 g per single dose", 
+            calc: w => {
+                let total = w * 150;
+                let single = total / 3;
+                if (single > 1000) { single = 1000; total = 3000; }
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "فانكو (Vancomycin)", 
+            doseText: "45 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "No max limit", 
+            calc: w => {
+                let total = w * 45;
+                let single = total / 3;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "كلافو (Claforan)", 
+            doseText: "150 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 12 g daily total", 
+            calc: w => {
+                let total = w * 150;
+                if (total > 12000) total = 12000;
+                let single = total / 3;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "روس بلس (Ceftriaxone + Sulbactam)", 
+            doseText: "75 mg/kg/day", 
+            freq: "Divided BID", 
+            max: "No max limit", 
+            calc: w => {
+                let total = w * 75;
+                let single = total / 2;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "أميكا (Amikacin)", 
+            doseText: "15 mg/kg/day", 
+            freq: "Divided BID (max 5 days)", 
+            max: "Max 1.5 g daily total", 
+            calc: w => {
+                let total = w * 15;
+                if (total > 1500) total = 1500;
+                let single = total / 2;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "تينام (Tienam)", 
+            doseText: "100 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 500 mg per single dose", 
+            calc: w => {
+                let total = w * 100;
+                let single = total / 3;
+                if (single > 500) { single = 500; total = 1500; }
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "ميتوكال (Metoclopramide)", 
+            doseText: "0.45 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 0.8 mg/kg/day", 
+            calc: w => {
+                let total = w * 0.45;
+                let maxDaily = w * 0.8;
+                if (total > maxDaily) total = maxDaily;
+                let single = total / 3;
+                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+            }
+        },
+        {
+            name: "ديفوميت (Ondansetron)", 
+            doseText: "0.15 mg/kg", 
+            freq: "TID", 
+            max: "Max 16 mg per single dose", 
+            calc: w => {
+                let single = w * 0.15;
+                if (single > 16) single = 16;
+                return `Single Dose: ${single.toFixed(1)} mg`;
+            }
+        },
+        {
+            name: "ديكلون (Diclofenac)", 
+            doseText: "1 mg/kg", 
+            freq: "TID (3 times daily - IM عضل)", 
+            max: "No max limit", 
+            calc: w => {
+                let single = w * 1;
+                let total = single * 3;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg (عضلي)`;
+            }
+        },
+        {
+            name: "ديكسون (Dexamethasone)", 
+            doseText: "0.5 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 10 mg per single dose", 
+            calc: w => {
+                let total = w * 0.5;
+                let single = total / 3;
+                if (single > 10) { single = 10; total = 30; }
+                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+            }
+        },
+        {
+            name: "هيدروكورتيزون (Hydrocortisone)", 
+            doseText: "10 mg/kg", 
+            freq: "Max twice daily (BID)", 
+            max: "Max 100 mg per single dose", 
+            calc: w => { 
+                let single = w * 10;
+                if (single > 100) single = 100;
+                let total = single * 2;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total (Max BID): ${total.toFixed(0)} mg`; 
+            }
+        },
+        { name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "Max 40 mg", calc: w => { let d = w * 1; return d > 40 ? "40 mg" : `${d.toFixed(1)} mg`; } },
+        {
+            name: "سباسمون", 
+            doseText: "0.5 mg/kg", 
+            freq: "TID (3 times daily)", 
+            max: "-", 
+            calc: w => {
+                let single = w * 0.5;
+                let total = single * 3;
+                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+            }
+        },
+        { name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(1)} to ${(w * 1).toFixed(1)} mg` },
+        { name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "Max 5 mg", calc: w => { let d = w * 0.2; return d > 5 ? "5 mg" : `${d.toFixed(1)} mg`; } },
+        {
+            name: "أوغمنتين IV", 
+            doseText: "75 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 600 mg per single dose", 
+            calc: w => {
+                let total = w * 75;
+                let single = total / 3;
+                if (single > 600) { single = 600; total = 1800; }
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        {
+            name: "سيفيكس / اورالوكس (IV)", 
+            doseText: "10 mg/kg", 
+            freq: "Divided BID", 
+            max: "-", 
+            calc: w => {
+                let total = w * 10;
+                let single = total / 2;
+                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+            }
+        },
+        {
+            name: "بروفين (Ibuprofen IV)", 
+            doseText: "8 - 10 mg/kg per dose", 
+            freq: "3 times daily (TID)", 
+            max: "Max 800 mg/single dose | Max 3,200 mg/day", 
+            isSelectableDose: true,
+            options: [
+                { label: "8 mg / kg per single dose", dose: 8 },
+                { label: "10 mg / kg per single dose", dose: 10 }
+            ],
+            calc: (w, optIndex) => {
+                let dosePerKg = (optIndex === 1) ? 10 : 8;
+                let single = w * dosePerKg;
+                if (single > 800) single = 800;
+                let total = single * 3;
+                if (total > 3200) total = 3200;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg (${dosePerKg} mg/kg)`;
+            }
+        },
+        {
+            name: "رونيم (Meropenem)", 
+            doseText: "60 mg/kg/day", 
+            freq: "Divided TID", 
+            max: "Max 3 g daily total", 
+            calc: w => {
+                let total = w * 60;
+                if (total > 3000) total = 3000;
+                let single = total / 3;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        },
+        { name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${(w * 12).toFixed(0)} mg | Maint: ${(w * 10).toFixed(0)} mg` },
+        {
+            name: "بيزا (Piperacillin/Tazobactam)", 
+            doseText: "100 mg/kg", 
+            freq: "TID", 
+            max: "Max 4.5 g per single dose", 
+            calc: w => { 
+                let single = w * 100;
+                if (single > 4500) single = 4500;
+                let total = single * 3;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`; 
+            }
+        },
+        { name: "كوليستين", doseText: "75,000 IU/kg", freq: "Divided TID", max: "-", calc: w => `${Math.round(w * 75000).toLocaleString()} IU` },
+        {
+            name: "فلوكونازول", 
+            doseText: "10 mg/kg/day", 
+            freq: "Single dose", 
+            max: "Max 12 mg/kg/day", 
+            calc: w => { 
+                let total = w * 10;
+                let maxTotal = w * 12;
+                if (total > maxTotal) total = maxTotal;
+                return `Daily Dose: ${total.toFixed(0)} mg`; 
+            }
+        },
+        { name: "ليفوفلوكساسين", doseText: "10 mg/kg", freq: "Single dose", max: "Max 500 mg", calc: w => { let d = w * 10; return d > 500 ? "500 mg" : `${d.toFixed(0)} mg`; } },
+        {
+            name: "لينزولايد", 
+            doseText: "10 mg/kg", 
+            freq: "TID", 
+            max: "No max limit", 
+            calc: w => {
+                let single = w * 10;
+                let total = single * 3;
+                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+            }
+        }
     ];
 
     const oralMeds = [
-        {name: "نتروفورانتوئين", doseText: "Therapeutic 5 mg/kg", freq: "Therapeutic", max: "400 mg/day", concMg: 25, concPerMl: 5, calcMg: w => w * 5},
-        {name: "لاكتولوز", doseText: "7.5 ml fixed", freq: "1-2 times daily", max: "-", fixedMl: 7.5},
-        {name: "سيفيكس", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concMg: 100, concPerMl: 5, calcMg: w => w * 10},
-        {name: "اورالوكس", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concMg: 50, concPerMl: 5, calcMg: w => w * 10},
-        {name: "فلاجيل (Metronidazole)", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 10},
-        {name: "سيتامول", doseText: "15 mg/kg", freq: "4 times daily", max: "-", concMg: 120, concPerMl: 5, calcMg: w => w * 15},
-        {name: "بروفين (Ibuprofen)", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 100, concPerMl: 5, calcMg: w => w * 10},
-        {name: "أوغمنتين", doseText: "75 mg/kg/day", freq: "Divided TID", max: "-", concMg: 156, concPerMl: 5, calcMg: w => w * 75},
-        {name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 7},
-        {name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 30}
+        { name: "نتروفورانتوئين", doseText: "Therapeutic 5 mg/kg", freq: "Therapeutic", max: "400 mg/day", concentrations: [{ label: "25 mg / 5 ml", mg: 25, ml: 5 }], calcMg: w => w * 5 },
+        { 
+            name: "لاكتولوز", 
+            doseText: "7.5 ml fixed", 
+            freq: "1-2 times daily", 
+            max: "-", 
+            fixedMl: 7.5,
+            concentrations: [
+                { label: "10g / 15ml", mg: 10, ml: 15 }
+            ] 
+        },
+        { name: "سيفيكس (Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
+        { name: "اورالوكس (Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "50 mg / 5 ml", mg: 50, ml: 5 }, { label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
+        { 
+            name: "فلاجيل (Metronidazole Oral)", 
+            doseText: "30 mg/kg/day", 
+            freq: "Divided TID (every 8 hours)", 
+            max: "Max 500 mg per single dose", 
+            concentrations: [
+                { label: "125 mg / 5 ml", mg: 125, ml: 5 }, 
+                { label: "200 mg / 5 ml", mg: 200, ml: 5 }
+            ], 
+            calcSingleMg: w => { 
+                let total = w * 30; 
+                let single = total / 3; 
+                if (single > 500) single = 500; 
+                return single; 
+            } 
+        },
+        {
+            name: "سيتامول (Paracetamol Syrup)", 
+            doseText: "60 mg/kg/day", 
+            freq: "Every 6 hours (4 times daily - QID)", 
+            max: "Max 1 g per single dose | Max 4 g/day", 
+            concentrations: [
+                { label: "120 mg / 5 ml", mg: 120, ml: 5 },
+                { label: "160 mg / 5 ml", mg: 160, ml: 5 },
+                { label: "200 mg / 5 ml", mg: 200, ml: 5 },
+                { label: "250 mg / 5 ml", mg: 250, ml: 5 }
+            ],
+            calcSingleMg: w => {
+                let total = w * 60;
+                let single = total / 4;
+                if (single > 1000) single = 1000;
+                return single;
+            }
+        },
+        {
+            name: "بروفين (Ibuprofen Syrup)", 
+            doseText: "20 - 30 mg/kg/day (نطاق الجرعة)", 
+            rangeDose: { minRate: 20, maxRate: 30 },
+            freq: "TID (3 مرات يومياً)", 
+            max: "Max 400 mg per single dose", 
+            concentrations: [
+                { label: "100 mg / 5 ml", mg: 100, ml: 5 },
+                { label: "200 mg / 5 ml", mg: 200, ml: 5 }
+            ],
+            isRange: true
+        },
+        { 
+            name: "أوغمنتين (Augmentin Syrup)", 
+            doseText: "25 mg/kg per dose", 
+            freq: "Divided TID (3 times daily - every 8 hours)", 
+            max: "-", 
+            concentrations: [
+                { label: "156 mg / 5 ml", mg: 156, ml: 5 }, 
+                { label: "228 mg / 5 ml", mg: 228, ml: 5 }, 
+                { label: "312 mg / 5 ml", mg: 312, ml: 5 }, 
+                { label: "457 mg / 5 ml", mg: 457, ml: 5 }
+            ], 
+            calcSingleMg: w => w * 25 
+        },
+        { name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 7 },
+        { name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 30 }
     ];
 
     function toggleTheme() {
@@ -411,12 +735,50 @@
         }
     }
 
+    function checkDynamicOptions() {
+        const val = document.getElementById('medication').value;
+        const box = document.getElementById('concentrationBox');
+        const select = document.getElementById('subOptionSelect');
+        const label = document.getElementById('subOptionLabel');
+        
+        select.innerHTML = '';
+        box.style.display = 'none';
+
+        if (val.startsWith('oral_')) {
+            const index = parseInt(val.split('_')[1]);
+            const med = oralMeds[index];
+            if (med.concentrations && med.concentrations.length > 0) {
+                label.textContent = "اختر تركيز الشراب:";
+                med.concentrations.forEach((c, idx) => {
+                    let opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = c.label;
+                    select.appendChild(opt);
+                });
+                box.style.display = 'block';
+            }
+        } else if (val.startsWith('iv_')) {
+            const index = parseInt(val.split('_')[1]);
+            const med = ivMeds[index];
+            if (med.isSelectableDose && med.options) {
+                label.textContent = "اختر الجرعة أو طريقة التقسيم:";
+                med.options.forEach((o, idx) => {
+                    let opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = o.label;
+                    select.appendChild(opt);
+                });
+                box.style.display = 'block';
+            }
+        }
+    }
+
     function calculate() {
         const weightInput = document.getElementById('weight').value;
         const val = document.getElementById('medication').value;
         const resultCard = document.getElementById('resultCard');
 
-        if (!weightInput || weightInput <= 0) {
+        if (!weightInput || parseFloat(weightInput) <= 0) {
             alert('Please enter a valid patient weight first!');
             return;
         }
@@ -437,7 +799,7 @@
         let rowFreq = document.getElementById('rowFreq');
         let rowMax = document.getElementById('rowMax');
 
-        if (val === 'fluids') {
+        if (val === 'fluids' || val === 'half_fluids') {
             const totalMonths = parseInt(document.getElementById('ageMonthsInput').value) || 0;
             let totalFluid = 0;
             let ruleText = "";
@@ -468,25 +830,38 @@
                 }
             }
 
-            let ns = totalFluid / 9;
-            let ds = ns * 2;
-            let kcl = weight / 6;
+            let isHalf = (val === 'half_fluids');
+            if (isHalf) {
+                totalFluid = totalFluid / 2;
+                ruleText += " (Half-Maintenance / نصف الحاجة)";
+            }
 
-            document.getElementById('resTitle').textContent = "Maintenance Fluids & Electrolytes";
-            document.getElementById('resName').textContent = "Maintenance Fluids";
-            
-            document.getElementById('resMl').innerHTML = `
-                Total Fluids: <b>${totalFluid.toLocaleString()} ml / day</b>
-                <div class="fluid-details">
-                    • <b>NS (Normal Saline):</b> ${ns.toFixed(1)} ml (Total ÷ 9)<br>
-                    • <b>Ds (Dextrose):</b> ${ds.toFixed(1)} ml (Double of NS)<br>
-                    • <b>KCL:</b> ${kcl.toFixed(2)} ml (Weight ÷ 6)
-                </div>
-            `;
+            document.getElementById('resTitle').textContent = isHalf ? "Half-Maintenance Fluids & Electrolytes" : "Maintenance Fluids & Electrolytes";
+            document.getElementById('resName').textContent = isHalf ? "Half-Maintenance Fluids" : "Maintenance Fluids";
+
+            if (isHalf && weight > 40) {
+                document.getElementById('resMl').innerHTML = `Total Fluids: <b>1,000 ml / day (1 Liter)</b>`;
+            } else if (!isHalf && weight > 40) {
+                document.getElementById('resMl').innerHTML = `Total Fluids: <b>2,000 ml / day</b>`;
+            } else {
+                let effectiveWeight = isHalf ? (weight > 40 ? 40 : weight) : weight;
+                let ns = totalFluid / 9;
+                let ds = ns * 2;
+                let kcl = effectiveWeight / (isHalf ? 12 : 6);
+
+                document.getElementById('resMl').innerHTML = `
+                    Total Fluids: <b>${totalFluid.toLocaleString('en-US', {maximumFractionDigits: 1})} ml / day</b>
+                    <div class="fluid-details">
+                        • <b>NS (Normal Saline):</b> ${ns.toFixed(1)} ml<br>
+                        • <b>Ds (Dextrose):</b> ${ds.toFixed(1)} ml<br>
+                        • <b>KCL:</b> ${kcl.toFixed(2)} ml
+                    </div>
+                `;
+            }
             
             document.getElementById('resDoseText').textContent = ruleText;
             document.getElementById('resFreq').textContent = "Calculated based on standard fluid rules";
-            document.getElementById('resMax').textContent = "Standard max 2 Liters daily";
+            document.getElementById('resMax').textContent = (isHalf && weight > 40) ? "Adult Half-Maintenance Rule: 1 Liter mixed fluids + 1 amp KCL" : (isHalf ? "Half maintenance fluids rate (divided components)" : (weight > 40 ? "Adult Maintenance (2 L / day + 1 amp KCL per liter)" : "Standard max 2 Liters daily"));
 
             rowMg.style.display = 'none';
             rowMl.style.display = 'block';
@@ -500,9 +875,19 @@
 
             document.getElementById('resTitle').textContent = "IV Medication Result";
             document.getElementById('resName').textContent = med.name;
-            document.getElementById('resMg').textContent = med.calc(weight);
+            
+            let selectedOptIndex = document.getElementById('subOptionSelect').value;
+            selectedOptIndex = selectedOptIndex ? parseInt(selectedOptIndex) : 0;
+
+            document.getElementById('resMg').textContent = med.calc(weight, selectedOptIndex);
             document.getElementById('resDoseText').textContent = med.doseText;
-            document.getElementById('resFreq').textContent = med.freq;
+            
+            if (typeof med.freq === 'function') {
+                document.getElementById('resFreq').textContent = med.freq(selectedOptIndex);
+            } else {
+                document.getElementById('resFreq').textContent = med.freq;
+            }
+            
             document.getElementById('resMax').textContent = med.max;
 
             rowMg.style.display = 'block';
@@ -524,14 +909,59 @@
             rowMg.style.display = 'block';
             rowMl.style.display = 'block';
 
-            if (med.fixedMl) {
-                document.getElementById('resMg').textContent = 'Fixed Dose';
-                document.getElementById('resMl').textContent = med.fixedMl + ' ml';
+            if (med.name.includes("لاكتولوز")) {
+                document.getElementById('resMg').textContent = 'Laxative Dose (Lactulose 10g/15ml)';
+                document.getElementById('resMl').textContent = '7.5 ml (Standard starting dose)';
+            } else if (med.name.includes("فلاجيل") || med.name.includes("سيتامول (Paracetamol Syrup)") || med.name.includes("أوغمنتين (Augmentin Syrup)")) {
+                let singleMg = med.calcSingleMg(weight);
+                let concIndex = document.getElementById('subOptionSelect').value;
+                concIndex = concIndex ? parseInt(concIndex) : 0;
+                let selectedConc = med.concentrations[concIndex];
+                let singleMl = (singleMg * selectedConc.ml) / selectedConc.mg;
+
+                document.getElementById('resMg').textContent = `Single Dose: ${singleMg.toFixed(1)} mg`;
+                document.getElementById('resMl').textContent = `${singleMl.toFixed(2)} ml per single dose (${selectedConc.label})`;
+            } else if (med.isRange) {
+                let minDailyMg = weight * med.rangeDose.minRate;
+                let maxDailyMg = weight * med.rangeDose.maxRate;
+                let freqDiv = med.name.includes("بروفين") ? 3 : 4; 
+                let minSingleMg = minDailyMg / freqDiv;
+                let maxSingleMg = maxDailyMg / freqDiv;
+
+                let concIndex = document.getElementById('subOptionSelect').value;
+                concIndex = concIndex ? parseInt(concIndex) : 0;
+                let selectedConc = med.concentrations[concIndex];
+
+                let minMl = (minSingleMg * selectedConc.ml) / selectedConc.mg;
+                let maxMl = (maxSingleMg * selectedConc.ml) / selectedConc.mg;
+
+                document.getElementById('resMg').textContent = `Single Dose Range: ${minSingleMg.toFixed(1)} mg - ${maxSingleMg.toFixed(1)} mg`;
+                document.getElementById('resMl').innerHTML = `
+                    <b>${minMl.toFixed(2)} ml</b> to <b>${maxMl.toFixed(2)} ml</b> per single dose
+                    <div class="fluid-details">
+                        • <b>التركيز المختار:</b> ${selectedConc.label}<br>
+                        • <b>الجرعة اليومية الإجمالية:</b> ${minDailyMg.toFixed(0)} - ${maxDailyMg.toFixed(0)} mg
+                    </div>
+                `;
+            } else if (med.name.includes("سيفيكس") || med.name.includes("اورالوكس")) {
+                let totalMg = med.calcMg(weight);
+                let singleMg = totalMg / 2;
+                let concIndex = document.getElementById('subOptionSelect').value;
+                concIndex = concIndex ? parseInt(concIndex) : 0;
+                let selectedConc = med.concentrations[concIndex];
+                let singleMl = (singleMg * selectedConc.ml) / selectedConc.mg;
+                
+                document.getElementById('resMg').textContent = `Single Dose: ${singleMg.toFixed(1)} mg | Daily: ${totalMg.toFixed(1)} mg`;
+                document.getElementById('resMl').textContent = `${singleMl.toFixed(2)} ml per single dose (${selectedConc.label})`;
             } else {
                 let mg = med.calcMg(weight);
-                let ml = (mg * med.concPerMl) / med.concMg;
+                let concIndex = document.getElementById('subOptionSelect').value;
+                concIndex = concIndex ? parseInt(concIndex) : 0;
+                let selectedConc = med.concentrations ? med.concentrations[concIndex] : { mg: 25, ml: 5, label: "Default" };
+                let ml = (mg * selectedConc.ml) / selectedConc.mg;
+
                 document.getElementById('resMg').textContent = mg.toFixed(1) + ' mg';
-                document.getElementById('resMl').textContent = ml.toFixed(2) + ' ml (Volume)';
+                document.getElementById('resMl').textContent = `${ml.toFixed(2)} ml (Volume) [التركيز: ${selectedConc.label}]`;
             }
 
             rowDoseText.style.display = 'block';
@@ -550,7 +980,6 @@
         const freq = document.getElementById('resFreq').innerText;
         const max = document.getElementById('resMax').innerText;
 
-        // تم إزالة توقيع المطور من النص المنسوخ ليقتصر على تفاصيل النتيجة فقط
         let textToCopy = `--- ${title} ---\nItem: ${name}\n`;
         if (dose) textToCopy += `Dose: ${dose}\n`;
         if (volume) textToCopy += `Details: ${volume.trim()}\n`;
@@ -595,6 +1024,7 @@
         document.getElementById('weight').value = '';
         document.getElementById('ageMonthsInput').value = '';
         document.getElementById('medication').selectedIndex = 0;
+        document.getElementById('concentrationBox').style.display = 'none';
         const resultCard = document.getElementById('resultCard');
         resultCard.classList.remove('show');
         setTimeout(() => {
