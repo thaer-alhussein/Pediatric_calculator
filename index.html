@@ -15,8 +15,30 @@
             --primary-btn-hover: #115e59;
             --reset-btn: #c2410c;
             --reset-btn-hover: #9a3412;
+            --copy-btn: #0284c7;
+            --copy-btn-hover: #0369a1;
             --accent-color: #38bdf8;
+            --input-bg: #12141c;
+            --fluid-bg: #1e222d;
         }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-btn: #0d9488;
+            --primary-btn-hover: #0f766e;
+            --reset-btn: #ea580c;
+            --reset-btn-hover: #c2410c;
+            --copy-btn: #0284c7;
+            --copy-btn-hover: #0284c7;
+            --accent-color: #0284c7;
+            --input-bg: #f1f5f9;
+            --fluid-bg: #f1f5f9;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
@@ -27,6 +49,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .container {
             width: 100%;
@@ -35,13 +58,46 @@
             border: 1px solid var(--border-color);
             padding: 25px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
             box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
-        .en-header {
+        
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            direction: ltr;
+        }
+        .en-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--text-main);
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 5px;
             text-align: left;
             direction: ltr;
         }
+        .theme-toggle {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .theme-toggle:hover {
+            border-color: var(--accent-color);
+        }
+
         .form-group {
             margin-bottom: 20px;
             text-align: left;
@@ -57,13 +113,13 @@
         input, select {
             width: 100%;
             padding: 12px 15px;
-            background-color: #12141c;
+            background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             font-size: 15px;
             color: var(--text-main);
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background-color 0.3s, color 0.3s;
             text-align: left;
             direction: ltr;
         }
@@ -71,10 +127,15 @@
             outline: none;
             border-color: var(--accent-color);
         }
+        
         select option {
             direction: rtl;
             text-align: right;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            padding: 10px;
         }
+
         .btn-calculate {
             width: 100%;
             background-color: var(--primary-btn);
@@ -85,13 +146,16 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
             margin-top: 5px;
             box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
             direction: ltr;
         }
         .btn-calculate:hover {
             background-color: var(--primary-btn-hover);
+        }
+        .btn-calculate:active {
+            transform: scale(0.98);
         }
         .btn-reset {
             width: 100%;
@@ -112,13 +176,22 @@
         }
         .result-card {
             margin-top: 25px;
-            background: #12141c;
+            background: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 14px;
             padding: 18px;
             display: none;
             text-align: left;
             direction: ltr;
+            position: relative;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease, background-color 0.3s;
+        }
+        .result-card.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
         .result-card h3 {
             margin-top: 0;
@@ -142,7 +215,7 @@
             font-weight: bold;
         }
         .fluid-details {
-            background: #1e222d;
+            background: var(--fluid-bg);
             padding: 10px;
             border-radius: 8px;
             margin-top: 8px;
@@ -151,6 +224,23 @@
             line-height: 1.6;
             direction: ltr;
             text-align: left;
+        }
+        .btn-copy {
+            width: 100%;
+            background-color: var(--copy-btn);
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 15px;
+            direction: ltr;
+        }
+        .btn-copy:hover {
+            background-color: var(--copy-btn-hover);
         }
         .footer-signature {
             text-align: center;
@@ -164,10 +254,13 @@
 <body>
 
 <div class="container">
-    <div class="en-header">
-        <h2>Patient & Drug Information</h2>
-        <div class="subtitle" style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Enter patient details and select a drug from the list.</div>
+    <div class="header-flex">
+        <div class="en-header">
+            <h2>Patient & Drug Information</h2>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
     </div>
+    <div class="subtitle" style="margin-bottom: 25px;">Enter patient details and select a drug from the list.</div>
     
     <div class="form-group">
         <label for="weight">Weight (kg)</label>
@@ -191,25 +284,25 @@
                 <option value="iv_3">كلوريد البوتاسيوم 15%</option>
                 <option value="iv_4">روس (Ceftriaxone)</option>
                 <option value="iv_5">فلاجيل (Metronidazole)</option>
-                <option value="iv_6">سيتامول IV</option>
+                <option value="iv_6">سيتامول (Paracetamol)</option>
                 <option value="iv_7">سفتا (Ceftazidime)</option>
                 <option value="iv_8">فانكو (Vancomycin)</option>
                 <option value="iv_9">كلافو (Claforan)</option>
-                <option value="iv_10">روس بلس</option>
+                <option value="iv_10">روس بلس (Ceftriaxone + Sulbactam)</option>
                 <option value="iv_11">أميكا (Amikacin)</option>
                 <option value="iv_12">تينام (Tienam)</option>
-                <option value="iv_13">ميتوكال / سيروكال</option>
-                <option value="iv_14">اوندال / ديفوميت</option>
-                <option value="iv_15">ديكلون</option>
+                <option value="iv_13">ميتوكال (Metoclopramide)</option>
+                <option value="iv_14">ديفوميت (Ondansetron)</option>
+                <option value="iv_15">ديكلون (Diclofenac)</option>
                 <option value="iv_16">ديكسون (Dexamethasone)</option>
-                <option value="iv_17">هيدروكورتيزون</option>
+                <option value="iv_17">هيدروكورتيزون (Hydrocortisone)</option>
                 <option value="iv_18">رايسك (Omeprazole IV)</option>
                 <option value="iv_19">سباسمون</option>
                 <option value="iv_20">بيتدين</option>
                 <option value="iv_21">دورميكوم / دورميتا</option>
                 <option value="iv_22">أوغمنتين IV</option>
                 <option value="iv_23">سيفيكس / اورالوكس</option>
-                <option value="iv_24">بروفين</option>
+                <option value="iv_24">بروفين (Ibuprofen)</option>
                 <option value="iv_25">رونيم (Meropenem)</option>
                 <option value="iv_26">تارغو (Targocid)</option>
                 <option value="iv_27">بيزا (Piperacillin/Tazobactam)</option>
@@ -225,7 +318,7 @@
                 <option value="oral_3">اورالوكس</option>
                 <option value="oral_4">فلاجيل (Metronidazole)</option>
                 <option value="oral_5">سيتامول</option>
-                <option value="oral_6">بروفين</option>
+                <option value="oral_6">بروفين (Ibuprofen)</option>
                 <option value="oral_7">أوغمنتين</option>
                 <option value="oral_8">أومني (Omnicef)</option>
                 <option value="oral_9">زدناد (Zinnat)</option>
@@ -244,6 +337,8 @@
         <div class="result-item" id="rowDoseText">Recommended Dose: <span id="resDoseText">-</span></div>
         <div class="result-item" id="rowFreq">Frequency: <span id="resFreq">-</span></div>
         <div class="result-item" id="rowMax">Max / Notes: <span id="resMax">-</span></div>
+        
+        <button class="btn-copy" onclick="copyResultToClipboard()">📋 Copy Result</button>
     </div>
 
     <div class="footer-signature">
@@ -263,25 +358,25 @@
             return `Single Dose: ${single} mg | Daily Total: ${total} mg (Single dose × 2)`;
         }},
         {name: "فلاجيل (Metronidazole)", doseText: "30 mg/kg", freq: "Divided TID (every 8 hours)", max: "500 mg per dose", calc: w => `${w * 30} mg`},
-        {name: "سيتامول IV", doseText: "40-60 mg/kg", freq: "Divided every 4-6 hours", max: "4 g / day", calc: w => `${w * 40} to ${w * 60} mg`},
+        {name: "سيتامول (Paracetamol)", doseText: "40-60 mg/kg", freq: "Divided every 4-6 hours", max: "4 g / day", calc: w => `${w * 40} to ${w * 60} mg`},
         {name: "سفتا (Ceftazidime)", doseText: "150 mg/kg", freq: "Divided TID", max: "1 g per dose", calc: w => `${w * 150} mg`},
         {name: "فانكو (Vancomycin)", doseText: "45 mg/kg", freq: "Divided TID", max: "-", calc: w => `${w * 45} mg`},
         {name: "كلافو (Claforan)", doseText: "150 mg/kg", freq: "Divided TID", max: "12 g / day", calc: w => `${w * 150} mg`},
-        {name: "روس بلس", doseText: "75 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 75} mg`},
+        {name: "روس بلس (Ceftriaxone + Sulbactam)", doseText: "75 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 75} mg`},
         {name: "أميكا (Amikacin)", doseText: "15 mg/kg", freq: "Divided BID (max 5 days)", max: "1.5 g / day", calc: w => `${w * 15} mg`},
         {name: "تينام (Tienam)", doseText: "90-110 mg/kg", freq: "Divided TID", max: "4 g / day", calc: w => `${w * 90} to ${w * 110} mg`},
-        {name: "ميتوكال / سيروكال", doseText: "0.45 mg/kg", freq: "Divided TID", max: "0.8 mg/kg/day", calc: w => `${(w * 0.45).toFixed(1)} mg`},
-        {name: "اوندال / ديفوميت", doseText: "0.15 mg/kg", freq: "TID", max: "16 mg per dose", calc: w => `${(w * 0.15).toFixed(1)} mg`},
-        {name: "ديكلون", doseText: "1 mg/kg", freq: "Single dose", max: "100 mg", calc: w => `${w * 1} mg`},
+        {name: "ميتوكال (Metoclopramide)", doseText: "0.45 mg/kg", freq: "Divided TID", max: "0.8 mg/kg/day", calc: w => `${(w * 0.45).toFixed(1)} mg`},
+        {name: "ديفوميت (Ondansetron)", doseText: "0.15 mg/kg", freq: "TID", max: "16 mg per dose", calc: w => `${(w * 0.15).toFixed(1)} mg`},
+        {name: "ديكلون (Diclofenac)", doseText: "1 mg/kg", freq: "Single dose", max: "100 mg", calc: w => `${w * 1} mg`},
         {name: "ديكسون (Dexamethasone)", doseText: "0.5 mg/kg", freq: "Divided TID", max: "40 mg", calc: w => `${w * 0.5} mg`},
-        {name: "هيدروكورتيزون", doseText: "10 mg/kg", freq: "-", max: "-", calc: w => `${w * 10} mg`},
+        {name: "هيدروكورتيزون (Hydrocortisone)", doseText: "10 mg/kg", freq: "-", max: "-", calc: w => `${w * 10} mg`},
         {name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "-", calc: w => `${w * 1} mg`},
         {name: "سباسمون", doseText: "0.5 mg/kg", freq: "-", max: "-", calc: w => `${w * 0.5} mg`},
         {name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${w * 0.5} to ${w * 1} mg`},
         {name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.2).toFixed(1)} to ${(w * 0.5).toFixed(1)} mg`},
         {name: "أوغمنتين IV", doseText: "75 mg/kg", freq: "Divided TID", max: "600 mg per dose", calc: w => `${w * 75} mg`},
         {name: "سيفيكس / اورالوكس", doseText: "10 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 10} mg`},
-        {name: "بروفين", doseText: "8-10 mg/kg", freq: "TID", max: "3.2 g / day", calc: w => `${w * 8} to ${w * 10} mg`},
+        {name: "بروفين (Ibuprofen)", doseText: "8-10 mg/kg", freq: "TID", max: "3.2 g / day", calc: w => `${w * 8} to ${w * 10} mg`},
         {name: "رونيم (Meropenem)", doseText: "60 mg/kg", freq: "Divided TID", max: "3 g / day", calc: w => `${w * 60} mg`},
         {name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${w * 12} mg | Maint: ${w * 10} mg`},
         {name: "بيزا (Piperacillin/Tazobactam)", doseText: "100 mg/kg", freq: "TID", max: "4.5 g vial", calc: w => `${w * 100} mg`},
@@ -298,11 +393,23 @@
         {name: "اورالوكس", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concMg: 50, concPerMl: 5, calcMg: w => w * 10},
         {name: "فلاجيل (Metronidazole)", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 10},
         {name: "سيتامول", doseText: "15 mg/kg", freq: "4 times daily", max: "-", concMg: 120, concPerMl: 5, calcMg: w => w * 15},
-        {name: "بروفين", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 100, concPerMl: 5, calcMg: w => w * 10},
+        {name: "بروفين (Ibuprofen)", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 100, concPerMl: 5, calcMg: w => w * 10},
         {name: "أوغمنتين", doseText: "75 mg/kg/day", freq: "Divided TID", max: "-", concMg: 156, concPerMl: 5, calcMg: w => w * 75},
         {name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 7},
         {name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 30}
     ];
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const themeBtn = document.getElementById('themeBtn');
+        if (html.getAttribute('data-theme') === 'light') {
+            html.removeAttribute('data-theme');
+            themeBtn.textContent = '☀️ Light';
+        } else {
+            html.setAttribute('data-theme', 'light');
+            themeBtn.textContent = '🌙 Dark';
+        }
+    }
 
     function calculate() {
         const weightInput = document.getElementById('weight').value;
@@ -319,7 +426,10 @@
         }
 
         const weight = parseFloat(weightInput);
-        resultCard.style.display = 'block';
+        
+        resultCard.classList.remove('show');
+        void resultCard.offsetWidth;
+        resultCard.classList.add('show');
 
         let rowMg = document.getElementById('rowMg');
         let rowMl = document.getElementById('rowMl');
@@ -430,11 +540,66 @@
         }
     }
 
+    function copyResultToClipboard() {
+        const title = document.getElementById('resTitle').innerText;
+        const name = document.getElementById('resName').innerText;
+        const dose = document.getElementById('rowMg').style.display !== 'none' ? document.getElementById('resMg').innerText : '';
+        const volumeEl = document.getElementById('resMl');
+        const volume = document.getElementById('rowMl').style.display !== 'none' ? volumeEl.innerText || volumeEl.textContent : '';
+        const recDose = document.getElementById('resDoseText').innerText;
+        const freq = document.getElementById('resFreq').innerText;
+        const max = document.getElementById('resMax').innerText;
+
+        // تم إزالة توقيع المطور من النص المنسوخ ليقتصر على تفاصيل النتيجة فقط
+        let textToCopy = `--- ${title} ---\nItem: ${name}\n`;
+        if (dose) textToCopy += `Dose: ${dose}\n`;
+        if (volume) textToCopy += `Details: ${volume.trim()}\n`;
+        textToCopy += `Rec. Dose: ${recDose}\nFrequency: ${freq}\nMax/Notes: ${max}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showCopySuccess();
+            }).catch(() => {
+                fallbackCopy(textToCopy);
+            });
+        } else {
+            fallbackCopy(textToCopy);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showCopySuccess();
+        } catch (err) {
+            alert('فشل نسخ النص، يرجى نسخه يدويُا.');
+        }
+        document.body.removeChild(textarea);
+    }
+
+    function showCopySuccess() {
+        const copyBtn = document.querySelector('.btn-copy');
+        copyBtn.textContent = '✅ Copied Successfully!';
+        setTimeout(() => {
+            copyBtn.textContent = '📋 Copy Result';
+        }, 2000);
+    }
+
     function resetForm() {
         document.getElementById('weight').value = '';
         document.getElementById('ageMonthsInput').value = '';
         document.getElementById('medication').selectedIndex = 0;
-        document.getElementById('resultCard').style.display = 'none';
+        const resultCard = document.getElementById('resultCard');
+        resultCard.classList.remove('show');
+        setTimeout(() => {
+            resultCard.style.display = 'none';
+        }, 300);
     }
 </script>
 
