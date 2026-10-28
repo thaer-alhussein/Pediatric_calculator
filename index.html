@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة جرعات الأدوية والسوائل للأطفال</title>
+    <style>
+        :root {
+            --bg-color: #12141c;
+            --card-bg: #1a1d26;
+            --border-color: #2d323f;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --primary-btn: #0f766e;
+            --primary-btn-hover: #115e59;
+            --reset-btn: #c2410c;
+            --reset-btn-hover: #9a3412;
+            --accent-color: #38bdf8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+        .en-header {
+            text-align: left;
+            direction: ltr;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+            direction: ltr;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #12141c;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            text-align: left;
+            direction: ltr;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        select option {
+            direction: rtl;
+            text-align: right;
+        }
+        .btn-calculate {
+            width: 100%;
+            background-color: var(--primary-btn);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 5px;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+            direction: ltr;
+        }
+        .btn-calculate:hover {
+            background-color: var(--primary-btn-hover);
+        }
+        .btn-reset {
+            width: 100%;
+            background-color: var(--reset-btn);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+            direction: ltr;
+        }
+        .btn-reset:hover {
+            background-color: var(--reset-btn-hover);
+        }
+        .result-card {
+            margin-top: 25px;
+            background: #12141c;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+        }
+        .result-card h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+            font-size: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        .result-item {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .result-item span {
+            color: var(--text-main);
+            font-weight: bold;
+        }
+        .highlight-value {
+            color: #34d399;
+            font-size: 17px;
+            font-weight: bold;
+        }
+        .fluid-details {
+            background: #1e222d;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.6;
+            direction: ltr;
+            text-align: left;
+        }
+        .footer-signature {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            direction: ltr;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="en-header">
+        <h2>Patient & Drug Information</h2>
+        <div class="subtitle" style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Enter patient details and select a drug from the list.</div>
+    </div>
+    
+    <div class="form-group">
+        <label for="weight">Weight (kg)</label>
+        <input type="number" id="weight" placeholder="e.g. 12.5" min="0.5" max="100" step="0.5">
+    </div>
+
+    <div class="form-group">
+        <label for="ageMonthsInput">Age (Months)</label>
+        <input type="number" id="ageMonthsInput" placeholder="Months (e.g. 3)" min="0" max="240">
+    </div>
+
+    <div class="form-group">
+        <label for="medication">Select a drug / service</label>
+        <select id="medication">
+            <option value="" disabled selected>Choose a medication from the list...</option>
+            <option value="fluids">💧 Maintenance Fluids + Electrolytes (NS, Ds, KCL)</option>
+            <optgroup label="--- IV Medications ---">
+                <option value="iv_0">نقل الدم / البلازما</option>
+                <option value="iv_1">ألبومين 20%</option>
+                <option value="iv_2">كلوريد البوتاسيوم 7.5%</option>
+                <option value="iv_3">كلوريد البوتاسيوم 15%</option>
+                <option value="iv_4">روس (Ceftriaxone)</option>
+                <option value="iv_5">فلاجيل (Metronidazole)</option>
+                <option value="iv_6">سيتامول IV</option>
+                <option value="iv_7">سفتا (Ceftazidime)</option>
+                <option value="iv_8">فانكو (Vancomycin)</option>
+                <option value="iv_9">كلافو (Claforan)</option>
+                <option value="iv_10">روس بلس</option>
+                <option value="iv_11">أميكا (Amikacin)</option>
+                <option value="iv_12">تينام (Tienam)</option>
+                <option value="iv_13">ميتوكال / سيروكال</option>
+                <option value="iv_14">اوندال / ديفوميت</option>
+                <option value="iv_15">ديكلون</option>
+                <option value="iv_16">ديكسون (Dexamethasone)</option>
+                <option value="iv_17">هيدروكورتيزون</option>
+                <option value="iv_18">رايسك (Omeprazole IV)</option>
+                <option value="iv_19">سباسمون</option>
+                <option value="iv_20">بيتدين</option>
+                <option value="iv_21">دورميكوم / دورميتا</option>
+                <option value="iv_22">أوغمنتين IV</option>
+                <option value="iv_23">سيفيكس / اورالوكس</option>
+                <option value="iv_24">بروفين</option>
+                <option value="iv_25">رونيم (Meropenem)</option>
+                <option value="iv_26">تارغو (Targocid)</option>
+                <option value="iv_27">بيزا (Piperacillin/Tazobactam)</option>
+                <option value="iv_28">كوليستين</option>
+                <option value="iv_29">فلوكونازول</option>
+                <option value="iv_30">ليفوفلوكساسين</option>
+                <option value="iv_31">لينزولايد</option>
+            </optgroup>
+            <optgroup label="--- Oral Syrups ---">
+                <option value="oral_0">نتروفورانتوئين</option>
+                <option value="oral_1">لاكتولوز</option>
+                <option value="oral_2">سيفيكس</option>
+                <option value="oral_3">اورالوكس</option>
+                <option value="oral_4">فلاجيل (Metronidazole)</option>
+                <option value="oral_5">سيتامول</option>
+                <option value="oral_6">بروفين</option>
+                <option value="oral_7">أوغمنتين</option>
+                <option value="oral_8">أومني (Omnicef)</option>
+                <option value="oral_9">زدناد (Zinnat)</option>
+            </optgroup>
+        </select>
+    </div>
+
+    <button class="btn-calculate" onclick="calculate()">Calculate Dose</button>
+    <button class="btn-reset" onclick="resetForm()">Reset</button>
+
+    <div id="resultCard" class="result-card">
+        <h3 id="resTitle">Calculation Result</h3>
+        <div class="result-item">Item: <span id="resName">-</span></div>
+        <div class="result-item" id="rowMg">Calculated Dose: <span id="resMg">-</span></div>
+        <div class="result-item" id="rowMl">Volume / Details: <span id="resMl" class="highlight-value">-</span></div>
+        <div class="result-item" id="rowDoseText">Recommended Dose: <span id="resDoseText">-</span></div>
+        <div class="result-item" id="rowFreq">Frequency: <span id="resFreq">-</span></div>
+        <div class="result-item" id="rowMax">Max / Notes: <span id="resMax">-</span></div>
+    </div>
+
+    <div class="footer-signature">
+        Developed by Dr. Thaer Al Hussein
+    </div>
+</div>
+
+<script>
+    const ivMeds = [
+        {name: "نقل الدم / البلازما", doseText: "10-15 ml/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${w * 10} to ${w * 15} ml`},
+        {name: "ألبومين 20%", doseText: "1 g/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${w * 1} g`},
+        {name: "كلوريد البوتاسيوم 7.5%", doseText: "1 ml/kg", freq: "-", max: "-", calc: w => `${w * 1} ml`},
+        {name: "كلوريد البوتاسيوم 15%", doseText: "0.5 ml/kg", freq: "-", max: "-", calc: w => `${w * 0.5} ml`},
+        {name: "روس (Ceftriaxone)", doseText: "50 mg/kg/day", freq: "Twice daily (divided BID)", max: "1 g per dose", calc: w => {
+            let total = w * 50;
+            let single = total / 2;
+            return `Single Dose: ${single} mg | Daily Total: ${total} mg (Single dose × 2)`;
+        }},
+        {name: "فلاجيل (Metronidazole)", doseText: "30 mg/kg", freq: "Divided TID (every 8 hours)", max: "500 mg per dose", calc: w => `${w * 30} mg`},
+        {name: "سيتامول IV", doseText: "40-60 mg/kg", freq: "Divided every 4-6 hours", max: "4 g / day", calc: w => `${w * 40} to ${w * 60} mg`},
+        {name: "سفتا (Ceftazidime)", doseText: "150 mg/kg", freq: "Divided TID", max: "1 g per dose", calc: w => `${w * 150} mg`},
+        {name: "فانكو (Vancomycin)", doseText: "45 mg/kg", freq: "Divided TID", max: "-", calc: w => `${w * 45} mg`},
+        {name: "كلافو (Claforan)", doseText: "150 mg/kg", freq: "Divided TID", max: "12 g / day", calc: w => `${w * 150} mg`},
+        {name: "روس بلس", doseText: "75 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 75} mg`},
+        {name: "أميكا (Amikacin)", doseText: "15 mg/kg", freq: "Divided BID (max 5 days)", max: "1.5 g / day", calc: w => `${w * 15} mg`},
+        {name: "تينام (Tienam)", doseText: "90-110 mg/kg", freq: "Divided TID", max: "4 g / day", calc: w => `${w * 90} to ${w * 110} mg`},
+        {name: "ميتوكال / سيروكال", doseText: "0.45 mg/kg", freq: "Divided TID", max: "0.8 mg/kg/day", calc: w => `${(w * 0.45).toFixed(1)} mg`},
+        {name: "اوندال / ديفوميت", doseText: "0.15 mg/kg", freq: "TID", max: "16 mg per dose", calc: w => `${(w * 0.15).toFixed(1)} mg`},
+        {name: "ديكلون", doseText: "1 mg/kg", freq: "Single dose", max: "100 mg", calc: w => `${w * 1} mg`},
+        {name: "ديكسون (Dexamethasone)", doseText: "0.5 mg/kg", freq: "Divided TID", max: "40 mg", calc: w => `${w * 0.5} mg`},
+        {name: "هيدروكورتيزون", doseText: "10 mg/kg", freq: "-", max: "-", calc: w => `${w * 10} mg`},
+        {name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "-", calc: w => `${w * 1} mg`},
+        {name: "سباسمون", doseText: "0.5 mg/kg", freq: "-", max: "-", calc: w => `${w * 0.5} mg`},
+        {name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${w * 0.5} to ${w * 1} mg`},
+        {name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.2).toFixed(1)} to ${(w * 0.5).toFixed(1)} mg`},
+        {name: "أوغمنتين IV", doseText: "75 mg/kg", freq: "Divided TID", max: "600 mg per dose", calc: w => `${w * 75} mg`},
+        {name: "سيفيكس / اورالوكس", doseText: "10 mg/kg", freq: "Divided BID", max: "-", calc: w => `${w * 10} mg`},
+        {name: "بروفين", doseText: "8-10 mg/kg", freq: "TID", max: "3.2 g / day", calc: w => `${w * 8} to ${w * 10} mg`},
+        {name: "رونيم (Meropenem)", doseText: "60 mg/kg", freq: "Divided TID", max: "3 g / day", calc: w => `${w * 60} mg`},
+        {name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${w * 12} mg | Maint: ${w * 10} mg`},
+        {name: "بيزا (Piperacillin/Tazobactam)", doseText: "100 mg/kg", freq: "TID", max: "4.5 g vial", calc: w => `${w * 100} mg`},
+        {name: "كوليستين", doseText: "75,000 IU/kg", freq: "Divided TID", max: "-", calc: w => `${(w * 75000).toLocaleString()} IU`},
+        {name: "فلوكونازول", doseText: "10 mg/kg", freq: "Single dose", max: "12 mg/kg/day", calc: w => `${w * 10} mg`},
+        {name: "ليفوفلوكساسين", doseText: "10 mg/kg", freq: "Single dose", max: "500 mg/day", calc: w => `${w * 10} mg`},
+        {name: "لينزولايد", doseText: "10 mg/kg", freq: "TID", max: "-", calc: w => `${w * 10} mg`}
+    ];
+
+    const oralMeds = [
+        {name: "نتروفورانتوئين", doseText: "Therapeutic 5 mg/kg", freq: "Therapeutic", max: "400 mg/day", concMg: 25, concPerMl: 5, calcMg: w => w * 5},
+        {name: "لاكتولوز", doseText: "7.5 ml fixed", freq: "1-2 times daily", max: "-", fixedMl: 7.5},
+        {name: "سيفيكس", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concMg: 100, concPerMl: 5, calcMg: w => w * 10},
+        {name: "اورالوكس", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concMg: 50, concPerMl: 5, calcMg: w => w * 10},
+        {name: "فلاجيل (Metronidazole)", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 10},
+        {name: "سيتامول", doseText: "15 mg/kg", freq: "4 times daily", max: "-", concMg: 120, concPerMl: 5, calcMg: w => w * 15},
+        {name: "بروفين", doseText: "10 mg/kg", freq: "TID", max: "-", concMg: 100, concPerMl: 5, calcMg: w => w * 10},
+        {name: "أوغمنتين", doseText: "75 mg/kg/day", freq: "Divided TID", max: "-", concMg: 156, concPerMl: 5, calcMg: w => w * 75},
+        {name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 7},
+        {name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concMg: 125, concPerMl: 5, calcMg: w => w * 30}
+    ];
+
+    function calculate() {
+        const weightInput = document.getElementById('weight').value;
+        const val = document.getElementById('medication').value;
+        const resultCard = document.getElementById('resultCard');
+
+        if (!weightInput || weightInput <= 0) {
+            alert('Please enter a valid patient weight first!');
+            return;
+        }
+        if (!val) {
+            alert('Please select a drug or service from the list!');
+            return;
+        }
+
+        const weight = parseFloat(weightInput);
+        resultCard.style.display = 'block';
+
+        let rowMg = document.getElementById('rowMg');
+        let rowMl = document.getElementById('rowMl');
+        let rowDoseText = document.getElementById('rowDoseText');
+        let rowFreq = document.getElementById('rowFreq');
+        let rowMax = document.getElementById('rowMax');
+
+        if (val === 'fluids') {
+            const totalMonths = parseInt(document.getElementById('ageMonthsInput').value) || 0;
+            let totalFluid = 0;
+            let ruleText = "";
+
+            if (totalMonths > 0 && totalMonths < 6) {
+                let rate = 100;
+                if (totalMonths === 1) rate = 150;
+                else if (totalMonths === 2) rate = 140;
+                else if (totalMonths === 3) rate = 130;
+                else if (totalMonths === 4) rate = 120;
+                else if (totalMonths === 5) rate = 110;
+                
+                totalFluid = weight * rate;
+                ruleText = `Age ${totalMonths} months (${rate} ml/kg)`;
+            } else {
+                if (weight <= 10) {
+                    totalFluid = weight * 100;
+                    ruleText = "First 10 kg (100 ml/kg)";
+                } else if (weight <= 20) {
+                    totalFluid = 1000 + ((weight - 10) * 50);
+                    ruleText = "10-20 kg (1000 ml + 50 ml per kg > 10)";
+                } else if (weight <= 40) {
+                    totalFluid = 1500 + ((weight - 20) * 20);
+                    ruleText = "20-40 kg (1500 ml + 20 ml per kg > 20)";
+                } else {
+                    totalFluid = 2000;
+                    ruleText = "Over 40 kg (Max 2 L / day)";
+                }
+            }
+
+            let ns = totalFluid / 9;
+            let ds = ns * 2;
+            let kcl = weight / 6;
+
+            document.getElementById('resTitle').textContent = "Maintenance Fluids & Electrolytes";
+            document.getElementById('resName').textContent = "Maintenance Fluids";
+            
+            document.getElementById('resMl').innerHTML = `
+                Total Fluids: <b>${totalFluid.toLocaleString()} ml / day</b>
+                <div class="fluid-details">
+                    • <b>NS (Normal Saline):</b> ${ns.toFixed(1)} ml (Total ÷ 9)<br>
+                    • <b>Ds (Dextrose):</b> ${ds.toFixed(1)} ml (Double of NS)<br>
+                    • <b>KCL:</b> ${kcl.toFixed(2)} ml (Weight ÷ 6)
+                </div>
+            `;
+            
+            document.getElementById('resDoseText').textContent = ruleText;
+            document.getElementById('resFreq').textContent = "Calculated based on standard fluid rules";
+            document.getElementById('resMax').textContent = "Standard max 2 Liters daily";
+
+            rowMg.style.display = 'none';
+            rowMl.style.display = 'block';
+            rowDoseText.style.display = 'block';
+            rowFreq.style.display = 'block';
+            rowMax.style.display = 'block';
+
+        } else if (val.startsWith('iv_')) {
+            const index = parseInt(val.split('_')[1]);
+            const med = ivMeds[index];
+
+            document.getElementById('resTitle').textContent = "IV Medication Result";
+            document.getElementById('resName').textContent = med.name;
+            document.getElementById('resMg').textContent = med.calc(weight);
+            document.getElementById('resDoseText').textContent = med.doseText;
+            document.getElementById('resFreq').textContent = med.freq;
+            document.getElementById('resMax').textContent = med.max;
+
+            rowMg.style.display = 'block';
+            rowMl.style.display = 'none';
+            rowDoseText.style.display = 'block';
+            rowFreq.style.display = 'block';
+            rowMax.style.display = 'block';
+
+        } else if (val.startsWith('oral_')) {
+            const index = parseInt(val.split('_')[1]);
+            const med = oralMeds[index];
+
+            document.getElementById('resTitle').textContent = "Oral Syrup Result";
+            document.getElementById('resName').textContent = med.name;
+            document.getElementById('resDoseText').textContent = med.doseText;
+            document.getElementById('resFreq').textContent = med.freq;
+            document.getElementById('resMax').textContent = med.max;
+
+            rowMg.style.display = 'block';
+            rowMl.style.display = 'block';
+
+            if (med.fixedMl) {
+                document.getElementById('resMg').textContent = 'Fixed Dose';
+                document.getElementById('resMl').textContent = med.fixedMl + ' ml';
+            } else {
+                let mg = med.calcMg(weight);
+                let ml = (mg * med.concPerMl) / med.concMg;
+                document.getElementById('resMg').textContent = mg.toFixed(1) + ' mg';
+                document.getElementById('resMl').textContent = ml.toFixed(2) + ' ml (Volume)';
+            }
+
+            rowDoseText.style.display = 'block';
+            rowFreq.style.display = 'block';
+            rowMax.style.display = 'block';
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('weight').value = '';
+        document.getElementById('ageMonthsInput').value = '';
+        document.getElementById('medication').selectedIndex = 0;
+        document.getElementById('resultCard').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
