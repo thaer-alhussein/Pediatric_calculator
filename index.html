@@ -5,24 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حاسبة جرعات الأدوية والسوائل للأطفال</title>
     <style>
+        /* التوافق التلقائي مع ثيم النظام (فاتح أو داكن افتراضياً) */
         :root {
-            --bg-color: #12141c;
-            --card-bg: #1a1d26;
-            --border-color: #2d323f;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --primary-btn: #0f766e;
-            --primary-btn-hover: #115e59;
-            --reset-btn: #c2410c;
-            --reset-btn-hover: #9a3412;
-            --copy-btn: #0284c7;
-            --copy-btn-hover: #0369a1;
-            --accent-color: #38bdf8;
-            --input-bg: #12141c;
-            --fluid-bg: #1e222d;
-        }
-
-        [data-theme="light"] {
+            color-scheme: light dark;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --border-color: #cbd5e1;
@@ -37,6 +22,64 @@
             --accent-color: #0284c7;
             --input-bg: #f1f5f9;
             --fluid-bg: #f1f5f9;
+        }
+
+        /* الثيم الداكن الافتراضي عند استخدام النظام للوضع الليلي */
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-color: #12141c;
+                --card-bg: #1a1d26;
+                --border-color: #2d323f;
+                --text-main: #f1f5f9;
+                --text-muted: #94a3b8;
+                --primary-btn: #0f766e;
+                --primary-btn-hover: #115e59;
+                --reset-btn: #c2410c;
+                --reset-btn-hover: #9a3412;
+                --copy-btn: #0284c7;
+                --copy-btn-hover: #0369a1;
+                --accent-color: #38bdf8;
+                --input-bg: #12141c;
+                --fluid-bg: #1e222d;
+            }
+        }
+
+        /* الفرض اليدوي للوضع الفاتح عبر الزر */
+        [data-theme="light"] {
+            color-scheme: light;
+            --bg-color: #f8fafc !important;
+            --card-bg: #ffffff !important;
+            --border-color: #cbd5e1 !important;
+            --text-main: #0f172a !important;
+            --text-muted: #64748b !important;
+            --primary-btn: #0d9488 !important;
+            --primary-btn-hover: #0f766e !important;
+            --reset-btn: #ea580c !important;
+            --reset-btn-hover: #c2410c !important;
+            --copy-btn: #0284c7 !important;
+            --copy-btn-hover: #0369a1 !important;
+            --accent-color: #0284c7 !important;
+            --input-bg: #f1f5f9 !important;
+            --fluid-bg: #f1f5f9 !important;
+        }
+
+        /* الفرض اليدوي للوضع الداكن عبر الزر */
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --bg-color: #12141c !important;
+            --card-bg: #1a1d26 !important;
+            --border-color: #2d323f !important;
+            --text-main: #f1f5f9 !important;
+            --text-muted: #94a3b8 !important;
+            --primary-btn: #0f766e !important;
+            --primary-btn-hover: #115e59 !important;
+            --reset-btn: #c2410c !important;
+            --reset-btn-hover: #9a3412 !important;
+            --copy-btn: #0284c7 !important;
+            --copy-btn-hover: #0369a1 !important;
+            --accent-color: #38bdf8 !important;
+            --input-bg: #12141c !important;
+            --fluid-bg: #1e222d !important;
         }
 
         body {
@@ -362,11 +405,54 @@
 </div>
 
 <script>
+    const html = document.documentElement;
+    const themeBtn = document.getElementById('themeBtn');
+
+    // تحديث شكل زر الثيم بناءً على الوضع الحالي
+    function updateButtonText() {
+        const isLight = html.getAttribute('data-theme') === 'light' || (!html.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+        themeBtn.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+    }
+
+    // تطبيق الثيم المحفوظ يدويًا إن وجد
+    const savedTheme = localStorage.getItem('theme_manual');
+    if (savedTheme) {
+        html.setAttribute('data-theme', savedTheme);
+    }
+    updateButtonText();
+
+    // تبديل الثيم يدوياً وحفظ الاختيار
+    function toggleTheme() {
+        const currentTheme = html.getAttribute('data-theme');
+        let newTheme = '';
+        
+        if (currentTheme === 'light') {
+            newTheme = 'dark';
+        } else if (currentTheme === 'dark') {
+            newTheme = 'light';
+        } else {
+            // إذا كان على وضع النظام، اعكس الوضع الحالي للجهاز
+            const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            newTheme = isSystemDark ? 'light' : 'dark';
+        }
+
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme_manual', newTheme);
+        updateButtonText();
+    }
+
+    // الاستماع لتغييرات نظام الجهاز في حال لم يحدد المستخدم وضعاً يددوياً
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (!localStorage.getItem('theme_manual')) {
+            updateButtonText();
+        }
+    });
+
     const ivMeds = [
-        { name: "نقل الدم / البلازما", doseText: "10-15 ml/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 10).toFixed(1)} to ${(w * 15).toFixed(1)} ml` },
-        { name: "ألبومين 20%", doseText: "1 g/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 1).toFixed(1)} g` },
-        { name: "كلوريد البوتاسيوم 7.5%", doseText: "1 ml/kg", freq: "-", max: "-", calc: w => `${(w * 1).toFixed(1)} ml` },
-        { name: "كلوريد البوتاسيوم 15%", doseText: "0.5 ml/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(1)} ml` },
+        { name: "نقل الدم / البلازما", doseText: "10-15 ml/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 10).toFixed(2)} to ${(w * 15).toFixed(2)} ml` },
+        { name: "ألبومين 20%", doseText: "1 g/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 1).toFixed(2)} g` },
+        { name: "كلوريد البوتاسيوم 7.5%", doseText: "1 ml/kg", freq: "-", max: "-", calc: w => `${(w * 1).toFixed(2)} ml` },
+        { name: "كلوريد البوتاسيوم 15%", doseText: "0.5 ml/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(2)} ml` },
         {
             name: "روس (Ceftriaxone)", 
             doseText: "50 mg/kg/day", 
@@ -376,7 +462,7 @@
                 let total = w * 50;
                 let single = total / 2;
                 if (single > 1000) { single = 1000; total = 2000; }
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -388,7 +474,7 @@
                 let total = w * 30;
                 let single = total / 3;
                 if (single > 500) { single = 500; total = 1500; }
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -406,7 +492,7 @@
                 let divider = (optIndex === 1) ? 6 : 4;
                 let single = total / divider;
                 if (single > 1000) { single = 1000; }
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -418,7 +504,7 @@
                 let total = w * 150;
                 let single = total / 3;
                 if (single > 1000) { single = 1000; total = 3000; }
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -429,7 +515,7 @@
             calc: w => {
                 let total = w * 45;
                 let single = total / 3;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -441,7 +527,7 @@
                 let total = w * 150;
                 if (total > 12000) total = 12000;
                 let single = total / 3;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -452,7 +538,7 @@
             calc: w => {
                 let total = w * 75;
                 let single = total / 2;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -464,7 +550,7 @@
                 let total = w * 15;
                 if (total > 1500) total = 1500;
                 let single = total / 2;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -476,7 +562,7 @@
                 let total = w * 100;
                 let single = total / 3;
                 if (single > 500) { single = 500; total = 1500; }
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -489,7 +575,7 @@
                 let maxDaily = w * 0.8;
                 if (total > maxDaily) total = maxDaily;
                 let single = total / 3;
-                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -500,7 +586,7 @@
             calc: w => {
                 let single = w * 0.15;
                 if (single > 16) single = 16;
-                return `Single Dose: ${single.toFixed(1)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg`;
             }
         },
         {
@@ -511,7 +597,7 @@
             calc: w => {
                 let single = w * 1;
                 let total = single * 3;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg (عضلي)`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg (عضلي)`;
             }
         },
         {
@@ -523,7 +609,7 @@
                 let total = w * 0.5;
                 let single = total / 3;
                 if (single > 10) { single = 10; total = 30; }
-                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -535,10 +621,10 @@
                 let single = w * 10;
                 if (single > 100) single = 100;
                 let total = single * 2;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total (Max BID): ${total.toFixed(0)} mg`; 
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total (Max BID): ${total.toFixed(2)} mg`; 
             }
         },
-        { name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "Max 40 mg", calc: w => { let d = w * 1; return d > 40 ? "40 mg" : `${d.toFixed(1)} mg`; } },
+        { name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "Max 40 mg", calc: w => { let d = w * 1; return d > 40 ? "40.00 mg" : `${d.toFixed(2)} mg`; } },
         {
             name: "سباسمون", 
             doseText: "0.5 mg/kg", 
@@ -547,11 +633,11 @@
             calc: w => {
                 let single = w * 0.5;
                 let total = single * 3;
-                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
-        { name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(1)} to ${(w * 1).toFixed(1)} mg` },
-        { name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "Max 5 mg", calc: w => { let d = w * 0.2; return d > 5 ? "5 mg" : `${d.toFixed(1)} mg`; } },
+        { name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(2)} to ${(w * 1).toFixed(2)} mg` },
+        { name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "Max 5 mg", calc: w => { let d = w * 0.2; return d > 5 ? "5.00 mg" : `${d.toFixed(2)} mg`; } },
         {
             name: "أوغمنتين IV", 
             doseText: "75 mg/kg/day", 
@@ -561,7 +647,7 @@
                 let total = w * 75;
                 let single = total / 3;
                 if (single > 600) { single = 600; total = 1800; }
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -572,7 +658,7 @@
             calc: w => {
                 let total = w * 10;
                 let single = total / 2;
-                return `Single Dose: ${single.toFixed(1)} mg | Daily Total: ${total.toFixed(1)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -591,7 +677,7 @@
                 if (single > 800) single = 800;
                 let total = single * 3;
                 if (total > 3200) total = 3200;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg (${dosePerKg} mg/kg)`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg (${dosePerKg} mg/kg)`;
             }
         },
         {
@@ -603,10 +689,10 @@
                 let total = w * 60;
                 if (total > 3000) total = 3000;
                 let single = total / 3;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
-        { name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${(w * 12).toFixed(0)} mg | Maint: ${(w * 10).toFixed(0)} mg` },
+        { name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${(w * 12).toFixed(2)} mg | Maint: ${(w * 10).toFixed(2)} mg` },
         {
             name: "بيزا (Piperacillin/Tazobactam)", 
             doseText: "100 mg/kg", 
@@ -616,10 +702,10 @@
                 let single = w * 100;
                 if (single > 4500) single = 4500;
                 let total = single * 3;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`; 
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`; 
             }
         },
-        { name: "كوليستين", doseText: "75,000 IU/kg", freq: "Divided TID", max: "-", calc: w => `${Math.round(w * 75000).toLocaleString()} IU` },
+        { name: "كوليستين", doseText: "75,000 IU/kg", freq: "Divided TID", max: "-", calc: w => `${(w * 75000).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} IU` },
         {
             name: "فلوكونازول", 
             doseText: "10 mg/kg/day", 
@@ -629,10 +715,10 @@
                 let total = w * 10;
                 let maxTotal = w * 12;
                 if (total > maxTotal) total = maxTotal;
-                return `Daily Dose: ${total.toFixed(0)} mg`; 
+                return `Daily Dose: ${total.toFixed(2)} mg`; 
             }
         },
-        { name: "ليفوفلوكساسين", doseText: "10 mg/kg", freq: "Single dose", max: "Max 500 mg", calc: w => { let d = w * 10; return d > 500 ? "500 mg" : `${d.toFixed(0)} mg`; } },
+        { name: "ليفوفلوكساسين", doseText: "10 mg/kg", freq: "Single dose", max: "Max 500 mg", calc: w => { let d = w * 10; return d > 500 ? "500.00 mg" : `${d.toFixed(2)} mg`; } },
         {
             name: "لينزولايد", 
             doseText: "10 mg/kg", 
@@ -641,7 +727,7 @@
             calc: w => {
                 let single = w * 10;
                 let total = single * 3;
-                return `Single Dose: ${single.toFixed(0)} mg | Daily Total: ${total.toFixed(0)} mg`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         }
     ];
@@ -722,18 +808,6 @@
         { name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 7 },
         { name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 30 }
     ];
-
-    function toggleTheme() {
-        const html = document.documentElement;
-        const themeBtn = document.getElementById('themeBtn');
-        if (html.getAttribute('data-theme') === 'light') {
-            html.removeAttribute('data-theme');
-            themeBtn.textContent = '☀️ Light';
-        } else {
-            html.setAttribute('data-theme', 'light');
-            themeBtn.textContent = '🌙 Dark';
-        }
-    }
 
     function checkDynamicOptions() {
         const val = document.getElementById('medication').value;
@@ -822,8 +896,8 @@
                     totalFluid = 1000 + ((weight - 10) * 50);
                     ruleText = "10-20 kg (1000 ml + 50 ml per kg > 10)";
                 } else if (weight <= 40) {
-                    totalFluid = 1500 + ((weight - 20) * 20);
-                    ruleText = "20-40 kg (1500 ml + 20 ml per kg > 20)";
+                    totalFluid = 1500 + ((weight - 20) * 25);
+                    ruleText = "20-40 kg (1500 ml + 25 ml per kg > 20)";
                 } else {
                     totalFluid = 2000;
                     ruleText = "Over 40 kg (Max 2 L / day)";
@@ -840,9 +914,9 @@
             document.getElementById('resName').textContent = isHalf ? "Half-Maintenance Fluids" : "Maintenance Fluids";
 
             if (isHalf && weight > 40) {
-                document.getElementById('resMl').innerHTML = `Total Fluids: <b>1,000 ml / day (1 Liter)</b>`;
+                document.getElementById('resMl').innerHTML = `Total Fluids: <b>1,000.00 ml / day (1 Liter)</b>`;
             } else if (!isHalf && weight > 40) {
-                document.getElementById('resMl').innerHTML = `Total Fluids: <b>2,000 ml / day</b>`;
+                document.getElementById('resMl').innerHTML = `Total Fluids: <b>2,000.00 ml / day</b>`;
             } else {
                 let effectiveWeight = isHalf ? (weight > 40 ? 40 : weight) : weight;
                 let ns = totalFluid / 9;
@@ -850,10 +924,10 @@
                 let kcl = effectiveWeight / (isHalf ? 12 : 6);
 
                 document.getElementById('resMl').innerHTML = `
-                    Total Fluids: <b>${totalFluid.toLocaleString('en-US', {maximumFractionDigits: 1})} ml / day</b>
+                    Total Fluids: <b>${totalFluid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ml / day</b>
                     <div class="fluid-details">
-                        • <b>NS (Normal Saline):</b> ${ns.toFixed(1)} ml<br>
-                        • <b>Ds (Dextrose):</b> ${ds.toFixed(1)} ml<br>
+                        • <b>NS (Normal Saline):</b> ${ns.toFixed(2)} ml<br>
+                        • <b>Ds (Dextrose):</b> ${ds.toFixed(2)} ml<br>
                         • <b>KCL:</b> ${kcl.toFixed(2)} ml
                     </div>
                 `;
@@ -911,7 +985,7 @@
 
             if (med.name.includes("لاكتولوز")) {
                 document.getElementById('resMg').textContent = 'Laxative Dose (Lactulose 10g/15ml)';
-                document.getElementById('resMl').textContent = '7.5 ml (Standard starting dose)';
+                document.getElementById('resMl').textContent = '7.50 ml (Standard starting dose)';
             } else if (med.name.includes("فلاجيل") || med.name.includes("سيتامول (Paracetamol Syrup)") || med.name.includes("أوغمنتين (Augmentin Syrup)")) {
                 let singleMg = med.calcSingleMg(weight);
                 let concIndex = document.getElementById('subOptionSelect').value;
@@ -919,7 +993,7 @@
                 let selectedConc = med.concentrations[concIndex];
                 let singleMl = (singleMg * selectedConc.ml) / selectedConc.mg;
 
-                document.getElementById('resMg').textContent = `Single Dose: ${singleMg.toFixed(1)} mg`;
+                document.getElementById('resMg').textContent = `Single Dose: ${singleMg.toFixed(2)} mg`;
                 document.getElementById('resMl').textContent = `${singleMl.toFixed(2)} ml per single dose (${selectedConc.label})`;
             } else if (med.isRange) {
                 let minDailyMg = weight * med.rangeDose.minRate;
@@ -935,12 +1009,12 @@
                 let minMl = (minSingleMg * selectedConc.ml) / selectedConc.mg;
                 let maxMl = (maxSingleMg * selectedConc.ml) / selectedConc.mg;
 
-                document.getElementById('resMg').textContent = `Single Dose Range: ${minSingleMg.toFixed(1)} mg - ${maxSingleMg.toFixed(1)} mg`;
+                document.getElementById('resMg').textContent = `Single Dose Range: ${minSingleMg.toFixed(2)} mg - ${maxSingleMg.toFixed(2)} mg`;
                 document.getElementById('resMl').innerHTML = `
                     <b>${minMl.toFixed(2)} ml</b> to <b>${maxMl.toFixed(2)} ml</b> per single dose
                     <div class="fluid-details">
                         • <b>التركيز المختار:</b> ${selectedConc.label}<br>
-                        • <b>الجرعة اليومية الإجمالية:</b> ${minDailyMg.toFixed(0)} - ${maxDailyMg.toFixed(0)} mg
+                        • <b>الجرعة اليومية الإجمالية:</b> ${minDailyMg.toFixed(2)} - ${maxDailyMg.toFixed(2)} mg
                     </div>
                 `;
             } else if (med.name.includes("سيفيكس") || med.name.includes("اورالوكس")) {
@@ -951,7 +1025,7 @@
                 let selectedConc = med.concentrations[concIndex];
                 let singleMl = (singleMg * selectedConc.ml) / selectedConc.mg;
                 
-                document.getElementById('resMg').textContent = `Single Dose: ${singleMg.toFixed(1)} mg | Daily: ${totalMg.toFixed(1)} mg`;
+                document.getElementById('resMg').textContent = `Single Dose: ${singleMg.toFixed(2)} mg | Daily: ${totalMg.toFixed(2)} mg`;
                 document.getElementById('resMl').textContent = `${singleMl.toFixed(2)} ml per single dose (${selectedConc.label})`;
             } else {
                 let mg = med.calcMg(weight);
@@ -960,7 +1034,7 @@
                 let selectedConc = med.concentrations ? med.concentrations[concIndex] : { mg: 25, ml: 5, label: "Default" };
                 let ml = (mg * selectedConc.ml) / selectedConc.mg;
 
-                document.getElementById('resMg').textContent = mg.toFixed(1) + ' mg';
+                document.getElementById('resMg').textContent = `${mg.toFixed(2)} mg`;
                 document.getElementById('resMl').textContent = `${ml.toFixed(2)} ml (Volume) [التركيز: ${selectedConc.label}]`;
             }
 
