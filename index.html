@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حاسبة جرعات الأدوية والسوائل للأطفال</title>
     <meta name="theme-color" content="#0d9488">
+    <link rel="manifest" href="./manifest.json">
     <style>
         :root {
             color-scheme: light dark;
@@ -494,33 +495,9 @@
 </div>
 
 <script>
-    // ربط الأيقونة المعتمدة مباشرة مع رابط ملف الـ icon.png الذي رفعته
-    const manifestData = {
-        "name": "حاسبة جرعات الأطفال",
-        "short_name": "PediaDose",
-        "start_url": "./index.html",
-        "display": "standalone",
-        "background_color": "#f8fafc",
-        "theme_color": "#0d9488",
-        "icons": [
-            {
-                "src": "./icon.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }
-        ]
-    };
-    const stringManifest = JSON.stringify(manifestData);
-    const blob = new Blob([stringManifest], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(blob);
-    const linkTag = document.createElement('link');
-    linkTag.rel = 'manifest';
-    linkTag.href = manifestURL;
-    document.head.appendChild(linkTag);
-
     if ('serviceWorker' in navigator) {
         const swCode = `
-            const CACHE_NAME = 'pedia-dose-v4';
+            const CACHE_NAME = 'pedia-dose-v5';
             self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
             self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
             self.addEventListener('fetch', event => {
