@@ -64,6 +64,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -75,6 +76,7 @@
             border-radius: 20px;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.15);
             box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         
         .top-buttons-flex {
@@ -97,21 +99,33 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.15s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .score-btn-header {
             background: var(--score-btn);
         }
-        .score-btn-header:hover { background: var(--score-btn-hover); transform: translateY(-1px); }
+        .score-btn-header:hover { 
+            background: var(--score-btn-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3);
+        }
         .vitals-btn-header {
             background: var(--vitals-btn);
         }
-        .vitals-btn-header:hover { background: var(--vitals-btn-hover); transform: translateY(-1px); }
+        .vitals-btn-header:hover { 
+            background: var(--vitals-btn-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+        }
 
         .score-btn-header svg, .vitals-btn-header svg {
             width: 22px;
             height: 22px;
             fill: currentColor;
+            transition: transform 0.2s ease;
+        }
+        .score-btn-header:hover svg, .vitals-btn-header:hover svg {
+            transform: scale(1.1);
         }
 
         .header-flex {
@@ -135,9 +149,11 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
+            transition: all 0.2s ease;
         }
         .theme-toggle:hover {
             border-color: var(--accent-color);
+            transform: scale(1.03);
         }
 
         .subtitle {
@@ -171,6 +187,12 @@
             box-sizing: border-box;
             text-align: left;
             direction: ltr;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
         }
 
         .custom-dropdown-container {
@@ -192,6 +214,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: border-color 0.2s ease;
+        }
+        .dropdown-selected:hover {
+            border-color: var(--accent-color);
         }
         .dropdown-list-container {
             display: none;
@@ -207,6 +233,11 @@
             max-height: 280px;
             overflow-y: auto;
             box-sizing: border-box;
+            animation: fadeInDrop 0.2s ease;
+        }
+        @keyframes fadeInDrop {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .dropdown-list-container.show {
             display: block;
@@ -232,6 +263,7 @@
             cursor: pointer;
             font-size: 14px;
             color: var(--text-main);
+            transition: background-color 0.15s ease;
         }
         .dropdown-item:hover {
             background-color: var(--dropdown-hover);
@@ -255,6 +287,7 @@
             border: 1px dashed var(--border-color);
             direction: ltr;
             text-align: left;
+            animation: fadeInDrop 0.2s ease;
         }
 
         .btn-calculate {
@@ -268,7 +301,14 @@
             border-radius: 12px;
             cursor: pointer;
             margin-top: 5px;
+            transition: all 0.2s ease;
         }
+        .btn-calculate:hover {
+            background-color: var(--primary-btn-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        }
+        
         .btn-reset {
             width: 100%;
             background-color: var(--reset-btn);
@@ -280,6 +320,12 @@
             border-radius: 12px;
             cursor: pointer;
             margin-top: 10px;
+            transition: all 0.2s ease;
+        }
+        .btn-reset:hover {
+            background-color: var(--reset-btn-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
         }
 
         .result-card {
@@ -291,6 +337,11 @@
             display: none;
             text-align: left;
             direction: ltr;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .result-card.show {
             display: block;
@@ -336,6 +387,11 @@
             border-radius: 10px;
             cursor: pointer;
             margin-top: 15px;
+            transition: all 0.2s ease;
+        }
+        .btn-copy:hover {
+            background-color: var(--copy-btn-hover);
+            transform: translateY(-1px);
         }
 
         .modal-overlay {
@@ -351,6 +407,12 @@
             align-items: center;
             padding: 15px;
             box-sizing: border-box;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         .modal-overlay.show {
             display: flex;
@@ -366,6 +428,11 @@
             overflow-y: auto;
             direction: rtl;
             text-align: right;
+            animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes scaleUp {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         .modal-header {
             display: flex;
@@ -384,6 +451,11 @@
             border-radius: 50%;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: var(--border-color);
+            transform: rotate(90deg);
         }
         .vitals-table {
             width: 100%;
@@ -444,7 +516,7 @@
 <body>
 
 <div class="container">
-    <!-- الأيقونتان بالأعلى: نبض القلب وسكور الزائدة المطابقة لطلباتك -->
+    <!-- الأيقونتان بالأعلى مع الحركات والانتقالات الانسيابية -->
     <div class="top-buttons-flex">
         <button class="score-btn-header" onclick="openPasModal()">
             <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
@@ -624,7 +696,7 @@
 <script>
     if ('serviceWorker' in navigator) {
         const swCode = `
-            const CACHE_NAME = 'pedia-dose-v9';
+            const CACHE_NAME = 'pedia-dose-v10';
             self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
             self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
             self.addEventListener('fetch', event => {
