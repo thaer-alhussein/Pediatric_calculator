@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حاسبة جرعات الأدوية والسوائل للأطفال</title>
-    <!-- ربط ملف الـ Manifest لتثبيت التطبيق -->
-    <link rel="manifest" href="manifest.json">
+    <!-- تم دمج الـ Manifest بداخل كود الـ Blob ديناميكياً ليبقى الملف واحداً -->
     <meta name="theme-color" content="#0d9488">
     <style>
         :root {
@@ -661,12 +660,40 @@
 </div>
 
 <script>
-    // تفعيل Service Worker للعمل أوفلاين وللتحديثات
+    // إنشاء ملف Manifest ديناميكياً ليبقى التطبيق بملف واحد
+    const manifestData = {
+        "name": "حاسبة جرعات الأطفال",
+        "short_name": "PediaDose",
+        "start_url": "./index.html",
+        "display": "standalone",
+        "background_color": "#f8fafc",
+        "theme_color": "#0d9488",
+        "icons": []
+    };
+    const stringManifest = JSON.stringify(manifestData);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    const linkTag = document.createElement('link');
+    linkTag.rel = 'manifest';
+    linkTag.href = manifestURL;
+    document.head.appendChild(linkTag);
+
+    // تدوير الـ Service Worker كود داخلي للعمل أوفلاين
     if ('serviceWorker' in navigator) {
+        const swCode = `
+            const CACHE_NAME = 'pedia-dose-v2';
+            self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+            self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request).then(cached => cached || fetch(event.request).catch(() => caches.match('./index.html')))
+                );
+            });
+        `;
+        const swBlob = new Blob([swCode], {type: 'text/javascript'});
+        const swURL = URL.createObjectURL(swBlob);
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker Registered!', reg))
-                .catch(err => console.log('Service Worker registration failed: ', err));
+            navigator.serviceWorker.register(swURL).catch(err => console.log('SW error', err));
         });
     }
 
@@ -908,7 +935,7 @@
                 return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
-        { name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(2)} to ${(w * 1).toFixed(2)} mg` },
+        { name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(2)} to ${(w * 1).toFixed(2)} ml` },
         { name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "Max 5 mg", calc: w => { let d = w * 0.2; return d > 5 ? "5.00 mg" : `${d.toFixed(2)} mg`; } },
         {
             name: "أوغمنتين IV", 
