@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حاسبة جرعات الأدوية والسوائل للأطفال</title>
+    <!-- ربط ملف الـ Manifest لتثبيت التطبيق -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d9488">
     <style>
-        /* التوافق التلقائي مع ثيم النظام (فاتح أو داكن افتراضياً) */
         :root {
             color-scheme: light dark;
             --bg-color: #f8fafc;
@@ -22,9 +24,11 @@
             --accent-color: #0284c7;
             --input-bg: #f1f5f9;
             --fluid-bg: #f1f5f9;
+            --dropdown-hover: #e2e8f0;
+            --vitals-btn: #7c3aed;
+            --vitals-btn-hover: #6d28d9;
         }
 
-        /* الثيم الداكن الافتراضي عند استخدام النظام للوضع الليلي */
         @media (prefers-color-scheme: dark) {
             :root:not([data-theme="light"]) {
                 --bg-color: #12141c;
@@ -41,10 +45,12 @@
                 --accent-color: #38bdf8;
                 --input-bg: #12141c;
                 --fluid-bg: #1e222d;
+                --dropdown-hover: #252a37;
+                --vitals-btn: #8b5cf6;
+                --vitals-btn-hover: #7c3aed;
             }
         }
 
-        /* الفرض اليدوي للوضع الفاتح عبر الزر */
         [data-theme="light"] {
             color-scheme: light;
             --bg-color: #f8fafc !important;
@@ -61,9 +67,11 @@
             --accent-color: #0284c7 !important;
             --input-bg: #f1f5f9 !important;
             --fluid-bg: #f1f5f9 !important;
+            --dropdown-hover: #e2e8f0 !important;
+            --vitals-btn: #7c3aed !important;
+            --vitals-btn-hover: #6d28d9 !important;
         }
 
-        /* الفرض اليدوي للوضع الداكن عبر الزر */
         [data-theme="dark"] {
             color-scheme: dark;
             --bg-color: #12141c !important;
@@ -80,6 +88,9 @@
             --accent-color: #38bdf8 !important;
             --input-bg: #12141c !important;
             --fluid-bg: #1e222d !important;
+            --dropdown-hover: #252a37 !important;
+            --vitals-btn: #8b5cf6 !important;
+            --vitals-btn-hover: #7c3aed !important;
         }
 
         body {
@@ -92,8 +103,20 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
+
+        @keyframes pageEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(25px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .container {
             width: 100%;
             max-width: 480px;
@@ -101,22 +124,27 @@
             border: 1px solid var(--border-color);
             padding: 25px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.15);
             box-sizing: border-box;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            animation: pageEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
         }
         
         .header-flex {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             direction: ltr;
         }
         .en-header h2 {
             margin: 0;
             font-size: 20px;
             color: var(--text-main);
+        }
+        .header-buttons {
+            display: flex;
+            gap: 8px;
         }
         .subtitle {
             color: var(--text-muted);
@@ -125,7 +153,7 @@
             text-align: left;
             direction: ltr;
         }
-        .theme-toggle {
+        .theme-toggle, .vitals-btn-header {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
             color: var(--text-main);
@@ -134,11 +162,21 @@
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             white-space: nowrap;
+        }
+        .vitals-btn-header {
+            background: var(--vitals-btn);
+            color: white;
+            border: none;
+        }
+        .vitals-btn-header:hover {
+            background: var(--vitals-btn-hover);
+            transform: translateY(-1px);
         }
         .theme-toggle:hover {
             border-color: var(--accent-color);
+            transform: translateY(-1px);
         }
 
         .form-group {
@@ -162,30 +200,110 @@
             font-size: 15px;
             color: var(--text-main);
             box-sizing: border-box;
-            transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+            transition: border-color 0.25s ease, background-color 0.4s ease, color 0.4s ease, box-shadow 0.25s ease;
             text-align: left;
             direction: ltr;
         }
         input:focus, select:focus {
             outline: none;
             border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
-        
-        select option {
+
+        .custom-dropdown-container {
+            position: relative;
+            width: 100%;
             direction: ltr;
             text-align: left;
-            background-color: var(--card-bg);
+        }
+        .dropdown-selected {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
             color: var(--text-main);
+            box-sizing: border-box;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.25s ease;
+        }
+        .dropdown-selected:hover {
+            border-color: var(--accent-color);
+        }
+        .dropdown-list-container {
+            display: none;
+            position: absolute;
+            top: 105%;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 100;
+            max-height: 280px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .dropdown-list-container.show {
+            display: block;
+        }
+        .dropdown-search-input {
+            width: calc(100% - 20px);
+            margin: 10px;
             padding: 10px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            box-sizing: border-box;
+            direction: ltr;
+            text-align: left;
+        }
+        .dropdown-items-wrapper {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+        .dropdown-item:hover {
+            background-color: var(--dropdown-hover);
+        }
+        .dropdown-group-label {
+            padding: 8px 15px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            background-color: var(--fluid-bg);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .concentration-box {
             display: none;
             margin-top: 10px;
-            padding: 10px;
+            padding: 12px;
             background: var(--fluid-bg);
             border-radius: 10px;
             border: 1px dashed var(--border-color);
+            animation: fadeIn 0.3s ease forwards;
+            direction: ltr;
+            text-align: left;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .btn-calculate {
@@ -198,17 +316,20 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
             margin-top: 5px;
-            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+            box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3);
             direction: ltr;
         }
         .btn-calculate:hover {
             background-color: var(--primary-btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(15, 118, 110, 0.4);
         }
         .btn-calculate:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
+
         .btn-reset {
             width: 100%;
             background-color: var(--reset-btn);
@@ -219,13 +340,32 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.25s ease, transform 0.15s ease;
             margin-top: 10px;
             direction: ltr;
         }
         .btn-reset:hover {
             background-color: var(--reset-btn-hover);
+            transform: translateY(-1px);
         }
+        .btn-reset:active {
+            transform: scale(0.97);
+        }
+
+        @keyframes resultPop {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            70% {
+                transform: translateY(-3px) scale(1.01);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .result-card {
             margin-top: 25px;
             background: var(--input-bg);
@@ -238,12 +378,10 @@
             position: relative;
             opacity: 0;
             transform: translateY(15px);
-            transition: opacity 0.4s ease, transform 0.4s ease, background-color 0.3s;
         }
         .result-card.show {
             display: block;
-            opacity: 1;
-            transform: translateY(0);
+            animation: resultPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         .result-card h3 {
             margin-top: 0;
@@ -287,13 +425,107 @@
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.25s ease, transform 0.15s ease;
             margin-top: 15px;
             direction: ltr;
         }
         .btn-copy:hover {
             background-color: var(--copy-btn-hover);
+            transform: translateY(-1px);
         }
+        .btn-copy:active {
+            transform: scale(0.97);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 520px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            direction: rtl;
+            text-align: right;
+            animation: pageEntrance 0.3s ease forwards;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--accent-color);
+        }
+        .modal-close {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: var(--reset-btn);
+            color: white;
+            border-color: var(--reset-btn);
+        }
+        .vitals-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .vitals-table th, .vitals-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            text-align: center;
+        }
+        .vitals-table th {
+            background-color: var(--fluid-bg);
+            color: var(--text-main);
+            font-weight: bold;
+        }
+        .vitals-table td {
+            color: var(--text-muted);
+        }
+        .vitals-table td:first-child {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
         .footer-signature {
             text-align: center;
             margin-top: 20px;
@@ -310,7 +542,10 @@
         <div class="en-header">
             <h2>Patient & Drug Information</h2>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+        <div class="header-buttons">
+            <button class="vitals-btn-header" onclick="openVitalsModal()">🩺 Vitals</button>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+        </div>
     </div>
     <div class="subtitle" style="margin-bottom: 25px;">Enter patient details and select a drug from the list.</div>
     
@@ -325,58 +560,19 @@
     </div>
 
     <div class="form-group">
-        <label for="medication">Select a drug / service</label>
-        <select id="medication" onchange="checkDynamicOptions()">
-            <option value="" disabled selected>Choose a medication from the list...</option>
-            <option value="fluids">💧 Maintenance Fluids + Electrolytes (Full)</option>
-            <option value="half_fluids">💧 Half-Maintenance Fluids (نصف الحاجة)</option>
-            <optgroup label="--- IV Medications ---">
-                <option value="iv_0">نقل الدم / البلازما</option>
-                <option value="iv_1">ألبومين 20%</option>
-                <option value="iv_2">كلوريد البوتاسيوم 7.5%</option>
-                <option value="iv_3">كلوريد البوتاسيوم 15%</option>
-                <option value="iv_4">روس (Ceftriaxone)</option>
-                <option value="iv_5">فلاجيل (Metronidazole)</option>
-                <option value="iv_6">سيتامول (Paracetamol IV)</option>
-                <option value="iv_7">سفتا (Ceftazidime)</option>
-                <option value="iv_8">فانكو (Vancomycin)</option>
-                <option value="iv_9">كلافو (Claforan)</option>
-                <option value="iv_10">روس بلس (Ceftriaxone + Sulbactam)</option>
-                <option value="iv_11">أميكا (Amikacin)</option>
-                <option value="iv_12">تينام (Tienam)</option>
-                <option value="iv_13">ميتوكال (Metoclopramide)</option>
-                <option value="iv_14">ديفوميت (Ondansetron)</option>
-                <option value="iv_15">ديكلون (Diclofenac)</option>
-                <option value="iv_16">ديكسون (Dexamethasone)</option>
-                <option value="iv_17">هيدروكورتيزون (Hydrocortisone)</option>
-                <option value="iv_18">رايسك (Omeprazole IV)</option>
-                <option value="iv_19">سباسمون</option>
-                <option value="iv_20">بيتدين</option>
-                <option value="iv_21">دورميكوم / دورميتا</option>
-                <option value="iv_22">أوغمنتين IV</option>
-                <option value="iv_23">سيفيكس / اورالوكس (IV)</option>
-                <option value="iv_24">بروفين (Ibuprofen IV)</option>
-                <option value="iv_25">رونيم (Meropenem)</option>
-                <option value="iv_26">تارغو (Targocid)</option>
-                <option value="iv_27">بيزا (Piperacillin/Tazobactam)</option>
-                <option value="iv_28">كوليستين</option>
-                <option value="iv_29">فلوكونازول</option>
-                <option value="iv_30">ليفوفلوكساسين</option>
-                <option value="iv_31">لينزولايد</option>
-            </optgroup>
-            <optgroup label="--- Oral Syrups ---">
-                <option value="oral_0">نتروفورانتوئين</option>
-                <option value="oral_1">لاكتولوز</option>
-                <option value="oral_2">سيفيكس (Oral)</option>
-                <option value="oral_3">اورالوكس (Oral)</option>
-                <option value="oral_4">فلاجيل (Metronidazole Oral)</option>
-                <option value="oral_5">سيتامول (Paracetamol Syrup)</option>
-                <option value="oral_6">بروفين (Ibuprofen Syrup)</option>
-                <option value="oral_7">أوغمنتين (Augmentin Syrup)</option>
-                <option value="oral_8">أومني (Omnicef)</option>
-                <option value="oral_9">زدناد (Zinnat)</option>
-            </optgroup>
-        </select>
+        <label for="medicationSearch">Select a drug / service</label>
+        
+        <div class="custom-dropdown-container" id="customDropdown">
+            <div class="dropdown-selected" id="dropdownSelected" onclick="toggleDropdown()">
+                <span id="selectedText">Choose a medication from the list...</span>
+                <span>▼</span>
+            </div>
+            <div class="dropdown-list-container" id="dropdownListContainer">
+                <input type="text" id="medicationSearch" class="dropdown-search-input" placeholder="Search drug..." oninput="filterDropdown(this.value)">
+                <div class="dropdown-items-wrapper" id="dropdownItemsWrapper"></div>
+            </div>
+        </div>
+        <input type="hidden" id="medication" value="">
 
         <div id="concentrationBox" class="concentration-box">
             <label for="subOptionSelect" id="subOptionLabel">اختر الجرعة أو التركيز:</label>
@@ -404,24 +600,90 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="vitalsModal" onclick="closeVitalsModalOnOutside(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>مرجع العلامات الحيوية حسب العمر (Pediatric Vitals)</h3>
+            <button class="modal-close" onclick="closeVitalsModal()">✕</button>
+        </div>
+        <table class="vitals-table">
+            <thead>
+                <tr>
+                    <th>الفئة العمرية</th>
+                    <th>النبض (bpm)</th>
+                    <th>التنفس (rpm)</th>
+                    <th>ضغط الدم الانقباضي</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>حديث الولادة (0-28 يوم)</td>
+                    <td>100 - 160</td>
+                    <td>30 - 60</td>
+                    <td>60 - 90</td>
+                </tr>
+                <tr>
+                    <td>الرضيع (1-12 شهر)</td>
+                    <td>100 - 150</td>
+                    <td>30 - 53</td>
+                    <td>87 - 105</td>
+                </tr>
+                <tr>
+                    <td>طفولة مبكرة (1-3 سنوات)</td>
+                    <td>98 - 140</td>
+                    <td>22 - 37</td>
+                    <td>95 - 105</td>
+                </tr>
+                <tr>
+                    <td>ما قبل المدرسة (3-5 سنوات)</td>
+                    <td>80 - 120</td>
+                    <td>20 - 28</td>
+                    <td>97 - 112</td>
+                </tr>
+                <tr>
+                    <td>مرحلة المدرسة (6-11 سنة)</td>
+                    <td>75 - 118</td>
+                    <td>18 - 25</td>
+                    <td>102 - 120</td>
+                </tr>
+                <tr>
+                    <td>المراهقون (12-18 سنة)</td>
+                    <td>60 - 100</td>
+                    <td>12 - 20</td>
+                    <td>110 - 131</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top: 15px; font-size: 11px; color: var(--text-muted); text-align: center;">
+            * مرجع تقريبي قياسي للاستخدام السريع أثناء المناوبات الإسعافية.
+        </div>
+    </div>
+</div>
+
 <script>
+    // تفعيل Service Worker للعمل أوفلاين وللتحديثات
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker Registered!', reg))
+                .catch(err => console.log('Service Worker registration failed: ', err));
+        });
+    }
+
     const html = document.documentElement;
     const themeBtn = document.getElementById('themeBtn');
 
-    // تحديث شكل زر الثيم بناءً على الوضع الحالي
     function updateButtonText() {
         const isLight = html.getAttribute('data-theme') === 'light' || (!html.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
         themeBtn.textContent = isLight ? '🌙 Dark' : '☀️ Light';
     }
 
-    // تطبيق الثيم المحفوظ يدويًا إن وجد
     const savedTheme = localStorage.getItem('theme_manual');
     if (savedTheme) {
         html.setAttribute('data-theme', savedTheme);
     }
     updateButtonText();
 
-    // تبديل الثيم يدوياً وحفظ الاختيار
     function toggleTheme() {
         const currentTheme = html.getAttribute('data-theme');
         let newTheme = '';
@@ -431,7 +693,6 @@
         } else if (currentTheme === 'dark') {
             newTheme = 'light';
         } else {
-            // إذا كان على وضع النظام، اعكس الوضع الحالي للجهاز
             const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             newTheme = isSystemDark ? 'light' : 'dark';
         }
@@ -441,12 +702,23 @@
         updateButtonText();
     }
 
-    // الاستماع لتغييرات نظام الجهاز في حال لم يحدد المستخدم وضعاً يددوياً
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         if (!localStorage.getItem('theme_manual')) {
             updateButtonText();
         }
     });
+
+    function openVitalsModal() {
+        document.getElementById('vitalsModal').classList.add('show');
+    }
+    function closeVitalsModal() {
+        document.getElementById('vitalsModal').classList.remove('show');
+    }
+    function closeVitalsModalOnOutside(e) {
+        if (e.target.id === 'vitalsModal') {
+            closeVitalsModal();
+        }
+    }
 
     const ivMeds = [
         { name: "نقل الدم / البلازما", doseText: "10-15 ml/kg", freq: "Infuse over 3 hours", max: "-", calc: w => `${(w * 10).toFixed(2)} to ${(w * 15).toFixed(2)} ml` },
@@ -809,6 +1081,78 @@
         { name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 30 }
     ];
 
+    const allOptions = [
+        { value: "fluids", name: "💧 Maintenance Fluids + Electrolytes (Full)", group: "" },
+        { value: "half_fluids", name: "💧 Half-Maintenance Fluids (نصف الحاجة)", group: "" },
+        ...ivMeds.map((m, idx) => ({ value: `iv_${idx}`, name: m.name, group: "--- IV Medications ---" })),
+        ...oralMeds.map((m, idx) => ({ value: `oral_${idx}`, name: m.name, group: "--- Oral Syrups ---" }))
+    ];
+
+    function renderDropdownItems(filter = "") {
+        const wrapper = document.getElementById('dropdownItemsWrapper');
+        wrapper.innerHTML = '';
+        
+        let currentGroup = "";
+        const lowerFilter = filter.toLowerCase();
+
+        allOptions.forEach(opt => {
+            if (filter && !opt.name.toLowerCase().includes(lowerFilter)) {
+                return;
+            }
+
+            if (opt.group && opt.group !== currentGroup) {
+                currentGroup = opt.group;
+                let groupDiv = document.createElement('div');
+                groupDiv.className = 'dropdown-group-label';
+                groupDiv.textContent = currentGroup;
+                wrapper.appendChild(groupDiv);
+            }
+
+            let itemDiv = document.createElement('div');
+            itemDiv.className = 'dropdown-item';
+            itemDiv.textContent = opt.name;
+            itemDiv.onclick = () => selectOption(opt.value, opt.name);
+            wrapper.appendChild(itemDiv);
+        });
+
+        if (wrapper.children.length === 0) {
+            let emptyDiv = document.createElement('div');
+            emptyDiv.className = 'dropdown-item';
+            emptyDiv.style.color = 'var(--text-muted)';
+            emptyDiv.textContent = 'No matching results found';
+            wrapper.appendChild(emptyDiv);
+        }
+    }
+
+    renderDropdownItems();
+
+    function toggleDropdown() {
+        const container = document.getElementById('dropdownListContainer');
+        container.classList.toggle('show');
+        if (container.classList.contains('show')) {
+            document.getElementById('medicationSearch').focus();
+        }
+    }
+
+    function filterDropdown(query) {
+        renderDropdownItems(query);
+    }
+
+    function selectOption(value, name) {
+        document.getElementById('medication').value = value;
+        document.getElementById('selectedText').textContent = name;
+        document.getElementById('dropdownListContainer').classList.remove('show');
+        document.getElementById('medicationSearch').value = '';
+        renderDropdownItems();
+        checkDynamicOptions();
+    }
+
+    window.addEventListener('click', function(e) {
+        if (!document.getElementById('customDropdown').contains(e.target)) {
+            document.getElementById('dropdownListContainer').classList.remove('show');
+        }
+    });
+
     function checkDynamicOptions() {
         const val = document.getElementById('medication').value;
         const box = document.getElementById('concentrationBox');
@@ -1097,7 +1441,8 @@
     function resetForm() {
         document.getElementById('weight').value = '';
         document.getElementById('ageMonthsInput').value = '';
-        document.getElementById('medication').selectedIndex = 0;
+        document.getElementById('medication').value = '';
+        document.getElementById('selectedText').textContent = 'Choose a medication from the list...';
         document.getElementById('concentrationBox').style.display = 'none';
         const resultCard = document.getElementById('resultCard');
         resultCard.classList.remove('show');
