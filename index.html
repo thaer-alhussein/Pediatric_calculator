@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة جرعات الأدوية والسوائل للأطفال</title>
+    <title>حاسبة جرعات الأدوية وسكور الزائدة للأطفال</title>
     <meta name="theme-color" content="#0d9488">
     <link rel="manifest" href="./manifest.json">
     <style>
@@ -26,6 +26,8 @@
             --dropdown-hover: #e2e8f0;
             --vitals-btn: #7c3aed;
             --vitals-btn-hover: #6d28d9;
+            --score-btn: #059669;
+            --score-btn-hover: #047857;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -47,6 +49,8 @@
                 --dropdown-hover: #252a37;
                 --vitals-btn: #8b5cf6;
                 --vitals-btn-hover: #7c3aed;
+                --score-btn: #10b981;
+                --score-btn-hover: #059669;
             }
         }
 
@@ -82,12 +86,14 @@
         }
         .en-header h2 {
             margin: 0;
-            font-size: 20px;
+            font-size: 18px;
             color: var(--text-main);
         }
         .header-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         .subtitle {
             color: var(--text-muted);
@@ -96,18 +102,23 @@
             text-align: left;
             direction: ltr;
         }
-        .theme-toggle, .vitals-btn-header {
+        .theme-toggle, .vitals-btn-header, .score-btn-header {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 8px 12px;
+            padding: 7px 10px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
         }
         .vitals-btn-header {
             background: var(--vitals-btn);
+            color: white;
+            border: none;
+        }
+        .score-btn-header {
+            background: var(--score-btn);
             color: white;
             border: none;
         }
@@ -363,6 +374,40 @@
         .vitals-table th {
             background-color: var(--fluid-bg);
         }
+
+        /* ستايل نافذة السكور */
+        .pas-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
+            direction: ltr;
+        }
+        .pas-item {
+            background: var(--input-bg);
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        .pas-item select {
+            width: 120px;
+            padding: 6px;
+            font-size: 13px;
+        }
+        .pas-result-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--fluid-bg);
+            border-radius: 10px;
+            border: 1px solid var(--accent-color);
+            text-align: left;
+            direction: ltr;
+        }
+
         .footer-signature {
             text-align: center;
             margin-top: 20px;
@@ -377,11 +422,12 @@
 <div class="container">
     <div class="header-flex">
         <div class="en-header">
-            <h2>Patient & Drug Information</h2>
+            <h2>Patient & Drug Info</h2>
         </div>
         <div class="header-buttons">
+            <button class="score-btn-header" onclick="openPasModal()">🔬 PAS Score</button>
             <button class="vitals-btn-header" onclick="openVitalsModal()">🩺 Vitals</button>
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️</button>
         </div>
     </div>
     <div class="subtitle" style="margin-bottom: 25px;">Enter patient details and select a drug from the list.</div>
@@ -437,7 +483,8 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="vitalsModal" onclick="closeVitalsModalOnOutside(event)">
+<!-- نافذة مرجع العلامات الحيوية -->
+<div class="modal-overlay" id="vitalsModal" onclick="closeModalOnOutside(event, 'vitalsModal')">
     <div class="modal-content">
         <div class="modal-header">
             <h3>مرجع العلامات الحيوية حسب العمر (Pediatric Vitals)</h3>
@@ -453,51 +500,97 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>حديث الولادة (0-28 يوم)</td>
-                    <td>100 - 160</td>
-                    <td>30 - 60</td>
-                    <td>60 - 90</td>
-                </tr>
-                <tr>
-                    <td>الرضيع (1-12 شهر)</td>
-                    <td>100 - 150</td>
-                    <td>30 - 53</td>
-                    <td>87 - 105</td>
-                </tr>
-                <tr>
-                    <td>طفولة مبكرة (1-3 سنوات)</td>
-                    <td>98 - 140</td>
-                    <td>22 - 37</td>
-                    <td>95 - 105</td>
-                </tr>
-                <tr>
-                    <td>ما قبل المدرسة (3-5 سنوات)</td>
-                    <td>80 - 120</td>
-                    <td>20 - 28</td>
-                    <td>97 - 112</td>
-                </tr>
-                <tr>
-                    <td>مرحلة المدرسة (6-11 سنة)</td>
-                    <td>75 - 118</td>
-                    <td>18 - 25</td>
-                    <td>102 - 120</td>
-                </tr>
-                <tr>
-                    <td>المراهقون (12-18 سنة)</td>
-                    <td>60 - 100</td>
-                    <td>12 - 20</td>
-                    <td>110 - 131</td>
-                </tr>
+                <tr><td>حديث الولادة (0-28 يوم)</td><td>100 - 160</td><td>30 - 60</td><td>60 - 90</td></tr>
+                <tr><td>الرضيع (1-12 شهر)</td><td>100 - 150</td><td>30 - 53</td><td>87 - 105</td></tr>
+                <tr><td>طفولة مبكرة (1-3 سنوات)</td><td>98 - 140</td><td>22 - 37</td><td>95 - 105</td></tr>
+                <tr><td>ما قبل المدرسة (3-5 سنوات)</td><td>80 - 120</td><td>20 - 28</td><td>97 - 112</td></tr>
+                <tr><td>مرحلة المدرسة (6-11 سنة)</td><td>75 - 118</td><td>18 - 25</td><td>102 - 120</td></tr>
+                <tr><td>المراهقون (12-18 سنة)</td><td>60 - 100</td><td>12 - 20</td><td>110 - 131</td></tr>
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- نافذة سكور تقييم التهاب الزائدة الدودية PAS -->
+<div class="modal-overlay" id="pasModal" onclick="closeModalOnOutside(event, 'pasModal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Pediatric Appendicitis Score (PAS)</h3>
+            <button class="modal-close" onclick="closePasModal()">✕</button>
+        </div>
+        <div class="pas-checklist">
+            <div class="pas-item">
+                <span>1. Cough / percussion / hopping tenderness (2 pts)</span>
+                <select id="pas_1" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="2">Yes (2)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>2. Tenderness over right iliac fossa (2 pts)</span>
+                <select id="pas_2" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="2">Yes (2)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>3. Migration of pain to RLQ (1 pt)</span>
+                <select id="pas_3" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>4. Fever ≥ 38°C (1 pt)</span>
+                <select id="pas_4" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>5. Anorexia (1 pt)</span>
+                <select id="pas_5" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>6. Nausea or vomiting (1 pt)</span>
+                <select id="pas_6" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>7. Leukocytosis (WBC > 10,000) (1 pt)</span>
+                <select id="pas_7" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+            <div class="pas-item">
+                <span>8. Neutrophilia (ANC > 7,500) (1 pt)</span>
+                <select id="pas_8" onchange="calculatePas()">
+                    <option value="0">No (0)</option>
+                    <option value="1">Yes (1)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="pas-result-box" id="pasResultBox">
+            <b>Total Score: <span id="pasTotal">0</span> / 10</b><br>
+            <span id="pasRisk" style="color: var(--accent-color);">Risk Category: Low Risk (< 4)</span><br>
+            <div id="pasManagement" class="fluid-details" style="margin-top: 6px;">
+                • Low likelihood of acute appendicitis.<br>• Likely do not warrant imaging.
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
     if ('serviceWorker' in navigator) {
         const swCode = `
-            const CACHE_NAME = 'pedia-dose-v5';
+            const CACHE_NAME = 'pedia-dose-v6';
             self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
             self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
             self.addEventListener('fetch', event => {
@@ -518,13 +611,11 @@
 
     function updateButtonText() {
         const isLight = html.getAttribute('data-theme') === 'light' || (!html.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
-        themeBtn.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+        themeBtn.textContent = isLight ? '🌙' : '☀️';
     }
 
     const savedTheme = localStorage.getItem('theme_manual');
-    if (savedTheme) {
-        html.setAttribute('data-theme', savedTheme);
-    }
+    if (savedTheme) { html.setAttribute('data-theme', savedTheme); }
     updateButtonText();
 
     function toggleTheme() {
@@ -535,14 +626,42 @@
         updateButtonText();
     }
 
-    function openVitalsModal() {
-        document.getElementById('vitalsModal').classList.add('show');
+    function openVitalsModal() { document.getElementById('vitalsModal').classList.add('show'); }
+    function closeVitalsModal() { document.getElementById('vitalsModal').classList.remove('show'); }
+    
+    function openPasModal() { 
+        document.getElementById('pasModal').classList.add('show'); 
+        calculatePas();
     }
-    function closeVitalsModal() {
-        document.getElementById('vitalsModal').classList.remove('show');
+    function closePasModal() { document.getElementById('pasModal').classList.remove('show'); }
+
+    function closeModalOnOutside(e, modalId) {
+        if (e.target.id === modalId) { document.getElementById(modalId).classList.remove('show'); }
     }
-    function closeVitalsModalOnOutside(e) {
-        if (e.target.id === 'vitalsModal') { closeVitalsModal(); }
+
+    function calculatePas() {
+        let sum = 0;
+        for (let i = 1; i <= 8; i++) {
+            sum += parseInt(document.getElementById('pas_' + i).value) || 0;
+        }
+        document.getElementById('pasTotal').textContent = sum;
+        
+        let riskText = "";
+        let mgmtText = "";
+        
+        if (sum < 4) {
+            riskText = "Low Risk (< 4)";
+            mgmtText = "• Low likelihood of acute appendicitis.<br>• Likely do not warrant imaging.";
+        } else if (sum >= 4 && sum <= 6) {
+            riskText = "Equivocal Risk (4 - 6)";
+            mgmtText = "• Imaging (U/S or MRI) recommended.<br>• Surgical consult may be warranted.<br>• Maintain NPO, IV fluids, analgesia.";
+        } else {
+            riskText = "High Risk (> 6)";
+            mgmtText = "• High likelihood of acute appendicitis.<br>• Surgical consult is warranted.<br>• Maintain NPO, IV fluids, analgesia.";
+        }
+        
+        document.getElementById('pasRisk').textContent = "Risk Category: " + riskText;
+        document.getElementById('pasManagement').innerHTML = mgmtText;
     }
 
     const ivMeds = [
@@ -581,8 +700,8 @@
             max: "Max 1 g per single dose", 
             isSelectableDose: true,
             options: [
-                { label: "4 مرات يومياً (مقسومة على 4 جرعات - كل 6 ساعات)", divider: 4 },
-                { label: "6 مرات يومياً (مقسومة على 6 جرعات - كل 4 ساعات)", divider: 6 }
+                { label: "4 مرات يومياً (كل 6 ساعات)", divider: 4 },
+                { label: "6 مرات يومياً (كل 4 ساعات)", divider: 6 }
             ],
             calc: (w, optIndex) => {
                 let total = w * 60;
@@ -689,7 +808,7 @@
         {
             name: "ديكلون (Diclofenac)", 
             doseText: "1 mg/kg", 
-            freq: "TID (3 times daily - IM عضل)", 
+            freq: "TID (عضلي IM)", 
             max: "No max limit", 
             calc: w => {
                 let single = w * 1;
@@ -718,7 +837,7 @@
                 let single = w * 10;
                 if (single > 100) single = 100;
                 let total = single * 2;
-                return `Single Dose: ${single.toFixed(2)} mg | Daily Total (Max BID): ${total.toFixed(2)} mg`; 
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`; 
             }
         },
         { name: "رايسك (Omeprazole IV)", doseText: "1 mg/kg", freq: "-", max: "Max 40 mg", calc: w => { let d = w * 1; return d > 40 ? "40.00 mg" : `${d.toFixed(2)} mg`; } },
@@ -762,7 +881,7 @@
             name: "بروفين (Ibuprofen IV)", 
             doseText: "8 - 10 mg/kg per dose", 
             freq: "3 times daily (TID)", 
-            max: "Max 800 mg/single dose | Max 3,200 mg/day", 
+            max: "Max 800 mg/single dose", 
             isSelectableDose: true,
             options: [
                 { label: "8 mg / kg per single dose", dose: 8 },
@@ -773,8 +892,7 @@
                 let single = w * dosePerKg;
                 if (single > 800) single = 800;
                 let total = single * 3;
-                if (total > 3200) total = 3200;
-                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg (${dosePerKg} mg/kg)`;
+                return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
         {
@@ -789,7 +907,7 @@
                 return `Single Dose: ${single.toFixed(2)} mg | Daily Total: ${total.toFixed(2)} mg`;
             }
         },
-        { name: "تارغو (Targocid)", doseText: "Loading 12 / Maintenance 10 mg/kg", freq: "Every 12h then maintenance", max: "-", calc: w => `Loading: ${(w * 12).toFixed(2)} mg | Maint: ${(w * 10).toFixed(2)} mg` },
+        { name: "تارغو (Targocid)", doseText: "Loading 12 / Maint 10 mg/kg", freq: "Every 12h", max: "-", calc: w => `Loading: ${(w * 12).toFixed(2)} mg | Maint: ${(w * 10).toFixed(2)} mg` },
         {
             name: "بيزا (Piperacillin/Tazobactam)", 
             doseText: "100 mg/kg", 
@@ -837,21 +955,16 @@
             freq: "1-2 times daily", 
             max: "-", 
             fixedMl: 7.5,
-            concentrations: [
-                { label: "10g / 15ml", mg: 10, ml: 15 }
-            ] 
+            concentrations: [{ label: "10g / 15ml", mg: 10, ml: 15 }] 
         },
         { name: "سيفيكس (Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
         { name: "اورالوكس (Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "50 mg / 5 ml", mg: 50, ml: 5 }, { label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
         { 
             name: "فلاجيل (Metronidazole Oral)", 
             doseText: "30 mg/kg/day", 
-            freq: "Divided TID (every 8 hours)", 
+            freq: "Divided TID", 
             max: "Max 500 mg per single dose", 
-            concentrations: [
-                { label: "125 mg / 5 ml", mg: 125, ml: 5 }, 
-                { label: "200 mg / 5 ml", mg: 200, ml: 5 }
-            ], 
+            concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "200 mg / 5 ml", mg: 200, ml: 5 }], 
             calcSingleMg: w => { 
                 let total = w * 30; 
                 let single = total / 3; 
@@ -862,8 +975,8 @@
         {
             name: "سيتامول (Paracetamol Syrup)", 
             doseText: "60 mg/kg/day", 
-            freq: "Every 6 hours (4 times daily - QID)", 
-            max: "Max 1 g per single dose | Max 4 g/day", 
+            freq: "Every 6 hours (QID)", 
+            max: "Max 1 g per single dose", 
             concentrations: [
                 { label: "120 mg / 5 ml", mg: 120, ml: 5 },
                 { label: "160 mg / 5 ml", mg: 160, ml: 5 },
@@ -879,27 +992,19 @@
         },
         {
             name: "بروفين (Ibuprofen Syrup)", 
-            doseText: "20 - 30 mg/kg/day (نطاق الجرعة)", 
+            doseText: "20 - 30 mg/kg/day", 
             rangeDose: { minRate: 20, maxRate: 30 },
-            freq: "TID (3 مرات يومياً)", 
+            freq: "TID", 
             max: "Max 400 mg per single dose", 
-            concentrations: [
-                { label: "100 mg / 5 ml", mg: 100, ml: 5 },
-                { label: "200 mg / 5 ml", mg: 200, ml: 5 }
-            ],
+            concentrations: [{ label: "100 mg / 5 ml", mg: 100, ml: 5 }, { label: "200 mg / 5 ml", mg: 200, ml: 5 }],
             isRange: true
         },
         { 
             name: "أوغمنتين (Augmentin Syrup)", 
             doseText: "25 mg/kg per dose", 
-            freq: "Divided TID (3 times daily - every 8 hours)", 
+            freq: "Divided TID", 
             max: "-", 
-            concentrations: [
-                { label: "156 mg / 5 ml", mg: 156, ml: 5 }, 
-                { label: "228 mg / 5 ml", mg: 228, ml: 5 }, 
-                { label: "312 mg / 5 ml", mg: 312, ml: 5 }, 
-                { label: "457 mg / 5 ml", mg: 457, ml: 5 }
-            ], 
+            concentrations: [{ label: "156 mg / 5 ml", mg: 156, ml: 5 }, { label: "228 mg / 5 ml", mg: 228, ml: 5 }, { label: "312 mg / 5 ml", mg: 312, ml: 5 }, { label: "457 mg / 5 ml", mg: 457, ml: 5 }], 
             calcSingleMg: w => w * 25 
         },
         { name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 7 },
@@ -941,9 +1046,7 @@
     function toggleDropdown() {
         const container = document.getElementById('dropdownListContainer');
         container.classList.toggle('show');
-        if (container.classList.contains('show')) {
-            document.getElementById('medicationSearch').focus();
-        }
+        if (container.classList.contains('show')) { document.getElementById('medicationSearch').focus(); }
     }
 
     function filterDropdown(query) { renderDropdownItems(query); }
@@ -1045,9 +1148,9 @@
             }
 
             let isHalf = (val === 'half_fluids');
-            if (isHalf) { totalFluid = totalFluid / 2; ruleText += " (Half-Maintenance / نصف الحاجة)"; }
+            if (isHalf) { totalFluid = totalFluid / 2; ruleText += " (Half-Maintenance)"; }
 
-            document.getElementById('resTitle').textContent = isHalf ? "Half-Maintenance Fluids & Electrolytes" : "Maintenance Fluids & Electrolytes";
+            document.getElementById('resTitle').textContent = isHalf ? "Half-Maintenance Fluids" : "Maintenance Fluids";
             document.getElementById('resName').textContent = isHalf ? "Half-Maintenance Fluids" : "Maintenance Fluids";
 
             if (weight > 40) {
@@ -1125,7 +1228,7 @@
                 let selectedConc = med.concentrations[concIndex];
                 let minMl = (minSingleMg * selectedConc.ml) / selectedConc.mg;
                 let maxMl = (maxSingleMg * selectedConc.ml) / selectedConc.mg;
-                document.getElementById('resMg').textContent = `Single Dose Range: ${minSingleMg.toFixed(2)} - ${maxSingleMg.toFixed(2)} mg`;
+                document.getElementById('resMg').textContent = `Single Range: ${minSingleMg.toFixed(2)} - ${maxSingleMg.toFixed(2)} mg`;
                 document.getElementById('resMl').innerHTML = `<b>${minMl.toFixed(2)} ml</b> to <b>${maxMl.toFixed(2)} ml</b> per single dose`;
             } else {
                 let mg = med.calcMg(weight);
