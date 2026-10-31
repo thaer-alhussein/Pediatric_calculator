@@ -79,18 +79,6 @@
             transition: width 0.4s ease-in-out;
         }
 
-        /* تأثير الاهتزاز عند الخطأ */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-6px); }
-            40%, 80% { transform: translateX(6px); }
-        }
-        .shake-error {
-            animation: shake 0.4s ease-in-out;
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-        }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
@@ -773,14 +761,12 @@
     if (savedTheme) { html.setAttribute('data-theme', savedTheme); }
     updateButtonText();
 
-    // تبديل الثيم بنكهة وتأثير تيليجرام (View Transitions API)
     function toggleTheme(event) {
         triggerHaptic();
 
         const currentTheme = html.getAttribute('data-theme');
         let newTheme = (currentTheme === 'light') ? 'dark' : 'light';
 
-        // التحقق من دعم المتصفح لميزة الانتقال الحديثة (Telegram Style)
         if (!document.startViewTransition) {
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme_manual', newTheme);
@@ -1247,7 +1233,7 @@
             const index = parseInt(val.split('_')[1]);
             const med = oralMeds[index];
             if (med.concentrations && med.concentrations.length > 0) {
-                label.textContent = "اختر تركيز الشراب:";
+                label.textContent = "اختر الجرعة أو التركيز:";
                 med.concentrations.forEach((c, idx) => {
                     let opt = document.createElement('option');
                     opt.value = idx;
@@ -1279,8 +1265,6 @@
         const resultCard = document.getElementById('resultCard');
 
         if (!weightVal || parseFloat(weightVal) <= 0) {
-            weightInput.classList.add('shake-error');
-            setTimeout(() => { weightInput.classList.remove('shake-error'); }, 400);
             alert('Please enter a valid patient weight first!');
             return;
         }
