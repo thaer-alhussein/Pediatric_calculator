@@ -54,6 +54,43 @@
             }
         }
 
+        /* تخصيص حركة الانتقال بأسلوب تليجرام (Telegram View Transition) */
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation: none;
+            mix-blend-mode: normal;
+        }
+        ::view-transition-old(root) {
+            z-index: 1;
+        }
+        ::view-transition-new(root) {
+            z-index: 9999;
+        }
+
+        /* شريط التقدم العلوي الذكي */
+        .top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #0d9488, #0284c7, #7c3aed);
+            z-index: 9999;
+            transition: width 0.4s ease-in-out;
+        }
+
+        /* تأثير الاهتزاز عند الخطأ */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake-error {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
@@ -140,6 +177,7 @@
             font-size: 20px;
             color: var(--text-main);
         }
+        
         .theme-toggle {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
@@ -150,6 +188,7 @@
             font-size: 14px;
             font-weight: 600;
             transition: all 0.2s ease;
+            view-transition-name: theme-btn;
         }
         .theme-toggle:hover {
             border-color: var(--accent-color);
@@ -515,13 +554,15 @@
 </head>
 <body>
 
+<div class="top-progress-bar" id="topProgressBar"></div>
+
 <div class="container">
     <div class="top-buttons-flex">
-        <button class="score-btn-header" onclick="openPasModal()">
+        <button class="score-btn-header" onclick="triggerHaptic(); openPasModal()">
             <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
             PAS Score
         </button>
-        <button class="vitals-btn-header" onclick="openVitalsModal()">
+        <button class="vitals-btn-header" onclick="triggerHaptic(); openVitalsModal()">
             <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             Vitals
         </button>
@@ -531,7 +572,7 @@
         <div class="en-header">
             <h2>Patient & Drug Info</h2>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+        <button class="theme-toggle" onclick="toggleTheme(event)" id="themeBtn">☀️ Light</button>
     </div>
     
     <div class="subtitle" style="margin-bottom: 25px;">Enter patient details and select a drug from the list.</div>
@@ -567,8 +608,8 @@
         </div>
     </div>
 
-    <button class="btn-calculate" onclick="calculate()">Calculate Dose</button>
-    <button class="btn-reset" onclick="resetForm()">Reset</button>
+    <button class="btn-calculate" onclick="triggerHaptic(); calculate()">Calculate Dose</button>
+    <button class="btn-reset" onclick="triggerHaptic(); resetForm()">Reset</button>
 
     <div id="resultCard" class="result-card">
         <h3 id="resTitle">Calculation Result</h3>
@@ -579,7 +620,7 @@
         <div class="result-item" id="rowFreq">Frequency: <span id="resFreq">-</span></div>
         <div class="result-item" id="rowMax">Max / Notes: <span id="resMax">-</span></div>
         
-        <button class="btn-copy" onclick="copyResultToClipboard()">📋 Copy Result</button>
+        <button class="btn-copy" onclick="triggerHaptic(); copyResultToClipboard()">📋 Copy Result</button>
     </div>
 
     <div class="footer-signature">
@@ -692,7 +733,7 @@
 <script>
     if ('serviceWorker' in navigator) {
         const swCode = `
-            const CACHE_NAME = 'pedia-dose-v11';
+            const CACHE_NAME = 'pedia-dose-v15';
             self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
             self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
             self.addEventListener('fetch', event => {
@@ -708,6 +749,18 @@
         });
     }
 
+    function triggerHaptic() {
+        if ('vibrate' in navigator) {
+            navigator.vibrate(25);
+        }
+    }
+
+    window.addEventListener('load', () => {
+        const bar = document.getElementById('topProgressBar');
+        bar.style.width = '100%';
+        setTimeout(() => { bar.style.opacity = '0'; }, 500);
+    });
+
     const html = document.documentElement;
     const themeBtn = document.getElementById('themeBtn');
 
@@ -720,12 +773,26 @@
     if (savedTheme) { html.setAttribute('data-theme', savedTheme); }
     updateButtonText();
 
-    function toggleTheme() {
+    // تبديل الثيم بنكهة وتأثير تيليجرام (View Transitions API)
+    function toggleTheme(event) {
+        triggerHaptic();
+
         const currentTheme = html.getAttribute('data-theme');
         let newTheme = (currentTheme === 'light') ? 'dark' : 'light';
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme_manual', newTheme);
-        updateButtonText();
+
+        // التحقق من دعم المتصفح لميزة الانتقال الحديثة (Telegram Style)
+        if (!document.startViewTransition) {
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme_manual', newTheme);
+            updateButtonText();
+            return;
+        }
+
+        document.startViewTransition(() => {
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme_manual', newTheme);
+            updateButtonText();
+        });
     }
 
     function openVitalsModal() { document.getElementById('vitalsModal').classList.add('show'); }
@@ -1206,11 +1273,14 @@
     }
 
     function calculate() {
-        const weightInput = document.getElementById('weight').value;
+        const weightInput = document.getElementById('weight');
+        const weightVal = weightInput.value;
         const val = document.getElementById('medication').value;
         const resultCard = document.getElementById('resultCard');
 
-        if (!weightInput || parseFloat(weightInput) <= 0) {
+        if (!weightVal || parseFloat(weightVal) <= 0) {
+            weightInput.classList.add('shake-error');
+            setTimeout(() => { weightInput.classList.remove('shake-error'); }, 400);
             alert('Please enter a valid patient weight first!');
             return;
         }
@@ -1219,7 +1289,7 @@
             return;
         }
 
-        const weight = parseFloat(weightInput);
+        const weight = parseFloat(weightVal);
         resultCard.classList.add('show');
 
         let rowMg = document.getElementById('rowMg');
@@ -1369,7 +1439,6 @@
         document.getElementById('concentrationBox').style.display = 'none';
         document.getElementById('resultCard').classList.remove('show');
 
-        // إعادة ضبط جميع قوائم ونتائج سكور الـ PAS للصفر
         for (let i = 1; i <= 8; i++) {
             let selectEl = document.getElementById('pas_' + i);
             if (selectEl) selectEl.value = "0";
