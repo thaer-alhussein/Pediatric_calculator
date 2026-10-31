@@ -516,7 +516,6 @@
 <body>
 
 <div class="container">
-    <!-- الأيقونتان بالأعلى مع الحركات والانتقالات الانسيابية -->
     <div class="top-buttons-flex">
         <button class="score-btn-header" onclick="openPasModal()">
             <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
@@ -528,7 +527,6 @@
         </button>
     </div>
 
-    <!-- العنوان الرئيسي والمود -->
     <div class="header-flex">
         <div class="en-header">
             <h2>Patient & Drug Info</h2>
@@ -589,7 +587,6 @@
     </div>
 </div>
 
-<!-- نافذة مرجع العلامات الحيوية -->
 <div class="modal-overlay" id="vitalsModal" onclick="closeModalOnOutside(event, 'vitalsModal')">
     <div class="modal-content">
         <div class="modal-header">
@@ -617,7 +614,6 @@
     </div>
 </div>
 
-<!-- نافذة سكور تقييم التهاب الزائدة الدودية PAS -->
 <div class="modal-overlay" id="pasModal" onclick="closeModalOnOutside(event, 'pasModal')">
     <div class="modal-content">
         <div class="modal-header">
@@ -696,7 +692,7 @@
 <script>
     if ('serviceWorker' in navigator) {
         const swCode = `
-            const CACHE_NAME = 'pedia-dose-v10';
+            const CACHE_NAME = 'pedia-dose-v11';
             self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
             self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
             self.addEventListener('fetch', event => {
@@ -1372,6 +1368,13 @@
         document.getElementById('selectedText').textContent = 'Choose a medication from the list...';
         document.getElementById('concentrationBox').style.display = 'none';
         document.getElementById('resultCard').classList.remove('show');
+
+        // إعادة ضبط جميع قوائم ونتائج سكور الـ PAS للصفر
+        for (let i = 1; i <= 8; i++) {
+            let selectEl = document.getElementById('pas_' + i);
+            if (selectEl) selectEl.value = "0";
+        }
+        calculatePas();
     }
 </script>
 
