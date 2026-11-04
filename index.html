@@ -1297,7 +1297,7 @@
             } else {
                 if (weight <= 10) { totalFluid = weight * 100; ruleText = "First 10 kg (100 ml/kg)"; }
                 else if (weight <= 20) { totalFluid = 1000 + ((weight - 10) * 50); ruleText = "10-20 kg (1000 ml + 50 ml per kg > 10)"; }
-                else if (weight <= 40) { totalFluid = 1500 + ((weight - 20) * 25); ruleText = "20-40 kg (1500 ml + 25 ml per kg > 20)"; }
+                else if (weight <= 40) { totalFluid = 1500 + ((weight - 20) * 20); ruleText = "20-40 kg (1500 ml + 20 ml per kg > 20)"; }
                 else { totalFluid = 2000; ruleText = "Over 40 kg (Max 2 L / day)"; }
             }
 
