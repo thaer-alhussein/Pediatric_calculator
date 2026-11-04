@@ -888,7 +888,7 @@
             }
         },
         {
-            name: "كلافو (Claforan)", 
+            name: "كلافو (Cefotaxime)", 
             doseText: "150 mg/kg/day", 
             freq: "Divided TID", 
             max: "Max 12 g daily total", 
@@ -923,7 +923,7 @@
             }
         },
         {
-            name: "تينام (Tienam)", 
+            name: "تينام (Imipenem)", 
             doseText: "100 mg/kg/day", 
             freq: "Divided TID", 
             max: "Max 500 mg per single dose", 
@@ -1006,9 +1006,9 @@
             }
         },
         { name: "بيتدين", doseText: "0.5-1 mg/kg", freq: "-", max: "-", calc: w => `${(w * 0.5).toFixed(2)} to ${(w * 1).toFixed(2)} ml` },
-        { name: "دورميكوم / دورميتا", doseText: "0.2-0.5 mg/kg", freq: "-", max: "Max 5 mg", calc: w => { let d = w * 0.2; return d > 5 ? "5.00 mg" : `${d.toFixed(2)} mg`; } },
+        { name: "دورميكوم / دورميتا (Midazolam)", doseText: "0.2-0.5 mg/kg", freq: "-", max: "Max 5 mg", calc: w => { let d = w * 0.2; return d > 5 ? "5.00 mg" : `${d.toFixed(2)} mg`; } },
         {
-            name: "أوغمنتين IV", 
+            name: "أوغمنتين IV (Amoxicillin+Clavulanic Acid)", 
             doseText: "75 mg/kg/day", 
             freq: "Divided TID", 
             max: "Max 600 mg per single dose", 
@@ -1020,7 +1020,7 @@
             }
         },
         {
-            name: "سيفيكس / اورالوكس (IV)", 
+            name: "سيفيكس (Cefixime) / اورالوكس (Cefpodoxime) IV", 
             doseText: "10 mg/kg", 
             freq: "Divided BID", 
             max: "-", 
@@ -1110,8 +1110,8 @@
             fixedMl: 7.5,
             concentrations: [{ label: "10g / 15ml", mg: 10, ml: 15 }] 
         },
-        { name: "سيفيكس (Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
-        { name: "اورالوكس (Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "50 mg / 5 ml", mg: 50, ml: 5 }, { label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
+        { name: "سيفيكس (Cefixime Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
+        { name: "اورالوكس (Cefpodoxime Oral)", doseText: "10 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "50 mg / 5 ml", mg: 50, ml: 5 }, { label: "100 mg / 5 ml", mg: 100, ml: 5 }], calcMg: w => w * 10 },
         { 
             name: "فلاجيل (Metronidazole Oral)", 
             doseText: "30 mg/kg/day", 
@@ -1153,15 +1153,15 @@
             isRange: true
         },
         { 
-            name: "أوغمنتين (Augmentin Syrup)", 
+            name: "أوغمنتين (Amoxicillin+Clavulanic Acid Syrup)", 
             doseText: "25 mg/kg per dose", 
             freq: "Divided TID", 
             max: "-", 
             concentrations: [{ label: "156 mg / 5 ml", mg: 156, ml: 5 }, { label: "228 mg / 5 ml", mg: 228, ml: 5 }, { label: "312 mg / 5 ml", mg: 312, ml: 5 }, { label: "457 mg / 5 ml", mg: 457, ml: 5 }], 
             calcSingleMg: w => w * 25 
         },
-        { name: "أومني (Omnicef)", doseText: "7 mg/kg", freq: "BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 7 },
-        { name: "زدناد (Zinnat)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 30 }
+        { name: "أومني (Cefdinir)", doseText: "7 mg/kg", freq: "BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 7 },
+        { name: "زدناد (Cefuroxime)", doseText: "30 mg/kg/day", freq: "Divided BID", max: "-", concentrations: [{ label: "125 mg / 5 ml", mg: 125, ml: 5 }, { label: "250 mg / 5 ml", mg: 250, ml: 5 }], calcMg: w => w * 30 }
     ];
 
     const allOptions = [
